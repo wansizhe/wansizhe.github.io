@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next gemini use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -83,6 +83,7 @@
 <meta property="og:title" content="Record for Myself">
 <meta property="og:url" content="http://wansizhe.github.io/index.html">
 <meta property="og:site_name" content="Record for Myself">
+<meta property="og:locale">
 <meta property="article:author" content="Wan SiZhe">
 <meta name="twitter:card" content="summary">
 
@@ -91,8 +92,8 @@
 <script type="text/javascript" id="hexo.configurations">
   var NexT = window.NexT || {};
   var CONFIG = {
-    root: '/',
-    scheme: 'Mist',
+    root: '',
+    scheme: 'Gemini',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -130,7 +131,7 @@
 
 
 
-<meta name="generator" content="Hexo 4.2.0"></head>
+<meta name="generator" content="Hexo 5.3.0"></head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
 
@@ -282,10 +283,159 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/12/01/Alibaba-ESMM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Record for Myself">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/01/Alibaba-ESMM/" itemprop="url">阿里巴巴CVR预估模型：ESMM</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-01T15:12:52+08:00">
+                2020-12-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1804.07931">Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate</a></p>
+<h2 id="0x00-CVR与CTR的区别"><a href="#0x00-CVR与CTR的区别" class="headerlink" title="0x00 CVR与CTR的区别"></a>0x00 CVR与CTR的区别</h2><p>CTR是点击率，CVR是转化率，点击率问题非常直接，其含义只有两步：</p>
+<ol>
+<li>页面曝光</li>
+<li>用户点击</li>
+</ol>
+<p>转化率中涉及的一般是转化为收益的行为，例如淘宝场景中的下单购买。转化率问题在业务逻辑上没有点击率问题那么简单，通常包含三步：</p>
+<ol>
+<li>页面曝光</li>
+<li>用户点击</li>
+<li>用户购买</li>
+</ol>
+<p><img src="/.io//CTR和CVR的样本关系.png" alt="CTR和CVR的样本关系"></p>
+<p>转化行为发生前，一定会出现点击行为，这是不可避免的。但是CVR预估问题，最终预估的概率不是“点击且转化”（这是CTCVR问题），而是“点击条件下转化”，这之间的区别和联系可以用下面这个式子表达</p>
+<script type="math/tex; mode=display">
+P\left(click,conversion\right) = P\left(click\right)P\left(conversion|click\right)</script><p>也就是</p>
+<script type="math/tex; mode=display">
+P_{CTCVR} = P_{CTR}\cdot P_{CVR}</script><p>所以不能使用全部的样本进行训练，假设样本由特征和标签组成，标签为1，代表成功转化，样本特征如果不做特别注明，那么就无法知道样本是否被点击过，这样训练的模型预测的是CTCVR，而不是CVR。联系实际场景，很多商品你没有购买的直接原因是你没有点击它，CVR预估模型需要预测一个物品假设你点击了，买的概率有多大。</p>
+<p>从以上问题中梳理出以下两个重要问题：</p>
+<ol>
+<li>Sample Selection Bias（SSB）。通常CVR预估问题在模型训练时，提供的样本局限于被点击的记录，其中成功转化的作为正样本，没有转化的作为负样本。但是在预测时，是对所有样本进行预测，而不是对被点击的样本进行预测。样本的选择造成了模型的偏差。</li>
+<li>Data Sparsity（DS）。当样本被局限于点击过的数据时，样本量会骤减，远不如CTR问题中曝光的数据量。</li>
+</ol>
+<h2 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h2><p><img src="/.io//ESMM模型结构.png" alt="ESMM模型结构图"></p>
+<p>这个模型体现出了CTCVR、CTR、CVR三者的关系，左边负责预测CVR，右边负责预测CTR，顶部通过相乘预测CTCVR。左侧CVR预估模型不直接参加计算损失函数，损失函数只包含CTR和CTCVR两部分</p>
+<script type="math/tex; mode=display">
+Loss\left(\theta_{ctr},\theta_{cvr}\right) = 
+\sum_{i=1}^{N}{L\left(y_{i},f\left(x_{i};\theta_{ctr}\right)\right)}+
+\sum_{i=1}^{N}{L\left(y_{i}\&z_{i},f\left(x_{i};\theta_{ctr}\right)\cdot f\left(x_{i};\theta_{cvr}\right)\right)}</script><p>这样设计，是因为CTR预估任务和CTCVR预估任务可以使用全部的样本，通过“曲线救国”的方式，绕开了CVR预估的样本问题。</p>
+<h3 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h3><p>作者对比的模型如下<br>模型 | 结构说明（逐渐复杂） | 训练样本（逐渐扩充）<br>:—-: | :—-: | :—-:<br>BASE | 仅CVR部分 | 仅包含点击样本<br>AMAN|同上|从未点击样本中采样作为负例加入<br>OVERSAMPLING|同上|对正例（点击并转化）过采样<br>UNBIAS|同上|加入rejection sampling<br>DIVISION|分别训练CTR和CTCVR，相除得CVR|同上<br>ESMM-NS|ESMM模型，embedding层不共享参数|同上<br>ESMM|完整的ESMM模型|同上</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/05/13/my-first-blog/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wan SiZhe">
+      <meta itemprop="name" content="">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/images/avatar.jpg">
     </span>
@@ -431,7 +581,7 @@
     <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/05/13/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Wan SiZhe">
+      <meta itemprop="name" content="">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/images/avatar.jpg">
     </span>
@@ -521,19 +671,15 @@
       
         
           
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
+            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
 <h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
 <h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 
           
         
@@ -606,9 +752,9 @@
             
               <img class="site-author-image" itemprop="image"
                 src="/images/avatar.jpg"
-                alt="Wan SiZhe" />
+                alt="" />
             
-              <p class="site-author-name" itemprop="name">Wan SiZhe</p>
+              <p class="site-author-name" itemprop="name"></p>
               <p class="site-description motion-element" itemprop="description"></p>
           </div>
 
@@ -619,7 +765,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -688,7 +834,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
@@ -706,7 +852,7 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a></div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a></div>
 
 
 
@@ -805,6 +951,13 @@
 
   
   
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
 
   
 
