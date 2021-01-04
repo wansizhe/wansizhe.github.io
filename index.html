@@ -378,13 +378,60 @@ P_{CTCVR} = P_{CTR}\cdot P_{CVR}</script><p>所以不能使用全部的样本进
 <li>Data Sparsity（DS）。当样本被局限于点击过的数据时，样本量会骤减，远不如CTR问题中曝光的数据量。</li>
 </ol>
 <h2 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h2><p><img src="/2020/12/01/Alibaba-ESMM/ESMM.png" alt="ESMM模型结构图"></p>
-
 <p>这个模型体现出了CTCVR、CTR、CVR三者的关系，左边负责预测CVR，右边负责预测CTR，顶部通过相乘预测CTCVR。左侧CVR预估模型不直接参加计算损失函数，损失函数只包含CTR和CTCVR两部分</p>
 <script type="math/tex; mode=display">
 Loss\left(\theta_{ctr},\theta_{cvr}\right) = 
 \sum_{i=1}^{N}{L\left(y_{i},f\left(x_{i};\theta_{ctr}\right)\right)}+
 \sum_{i=1}^{N}{L\left(y_{i}\&z_{i},f\left(x_{i};\theta_{ctr}\right)\cdot f\left(x_{i};\theta_{cvr}\right)\right)}</script><p>这样设计，是因为CTR预估任务和CTCVR预估任务可以使用全部的样本，通过“曲线救国”的方式，绕开了CVR预估的样本问题。</p>
-<h2 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h2><p>作者对比的模型如下<br>模型 | 结构说明（逐渐复杂） | 训练样本（逐渐扩充）<br>:—-: | :—-: | :—-:<br>BASE | 仅CVR部分 | 仅包含点击样本<br>AMAN|同上|从未点击样本中采样作为负例加入<br>OVERSAMPLING|同上|对正例（点击并转化）过采样<br>UNBIAS|同上|加入rejection sampling<br>DIVISION|分别训练CTR和CTCVR，相除得CVR|同上<br>ESMM-NS|ESMM模型，embedding层不共享参数|同上<br>ESMM|完整的ESMM模型|同上</p>
+<h2 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h2><p>作者对比的模型如下</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">模型</th>
+<th style="text-align:center">结构说明（逐渐复杂）</th>
+<th style="text-align:center">训练样本（逐渐扩充）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">BASE</td>
+<td style="text-align:center">仅CVR部分</td>
+<td style="text-align:center">仅包含点击样本</td>
+</tr>
+<tr>
+<td style="text-align:center">AMAN</td>
+<td style="text-align:center">同上</td>
+<td style="text-align:center">从未点击样本中采样作为负例加入</td>
+</tr>
+<tr>
+<td style="text-align:center">OVERSAMPLING</td>
+<td style="text-align:center">同上</td>
+<td style="text-align:center">对正例（点击并转化）过采样</td>
+</tr>
+<tr>
+<td style="text-align:center">UNBIAS</td>
+<td style="text-align:center">同上</td>
+<td style="text-align:center">加入rejection sampling</td>
+</tr>
+<tr>
+<td style="text-align:center">DIVISION</td>
+<td style="text-align:center">分别训练CTR和CTCVR，相除得CVR</td>
+<td style="text-align:center">同上</td>
+</tr>
+<tr>
+<td style="text-align:center">ESMM-NS</td>
+<td style="text-align:center">ESMM模型，embedding层不共享参数</td>
+<td style="text-align:center">同上</td>
+</tr>
+<tr>
+<td style="text-align:center">ESMM</td>
+<td style="text-align:center">完整的ESMM模型</td>
+<td style="text-align:center">同上</td>
+</tr>
+</tbody>
+</table>
+</div>
 
           
         
