@@ -298,6 +298,7 @@ A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\time
     <title>生成高质量查询推荐词</title>
     <url>/2020/12/13/Generate-QS/</url>
     <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1802.07997">Generating High-Quality Query Suggestion Candidates for Task-Based Search</a></p>
+<a id="more"></a>
 <h1 id="0x00-概述"><a href="#0x00-概述" class="headerlink" title="0x00 概述"></a>0x00 概述</h1><p>查询词推荐有两种形式，查询词补齐（query completions）和查询词优化（query refinements）。查询推荐包括两个步骤：先做推荐词的生成（suggestion generation），然后进行推荐词排序（suggestion ranking），这篇论文主要讲第一步，目标是生成足够多的高质量的候选词，并且保证多样性，以供之后的排序。</p>
 <p>作者后文讲了三种方法，通过实验发现三种方法都可以产生了独特的候选词，所以最好是将它们合并起来交给排序模型。</p>
 <h1 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h1><p>假设起始的搜索词为 $q_{0}$ ，给出的推荐词是 $q$ ，需要最大化 $P\left(q|q_{0}\right)$</p>
