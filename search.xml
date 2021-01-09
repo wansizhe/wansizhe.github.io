@@ -89,7 +89,7 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
       <tags>
         <tag>多任务学习</tag>
         <tag>推荐</tag>
-        <tag>CTR预估</tag>
+        <tag>CVR</tag>
       </tags>
   </entry>
   <entry>
@@ -201,6 +201,12 @@ f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\le
 <li>高斯核函数</li>
 </ul>
 <h2 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h2>]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>SVM</tag>
+      </tags>
   </entry>
   <entry>
     <title>矩阵SVD分解</title>
@@ -227,6 +233,65 @@ A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\time
       </categories>
       <tags>
         <tag>SVD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>阿里巴巴QAC搜索词补全模型：M&lt;sup&gt;2&lt;/sup&gt;A</title>
+    <url>/2020/12/09/Alibaba-M2A/</url>
+    <content><![CDATA[<p>论文地址：<a href="https://dl.acm.org/doi/10.1145/3394486.3403350">Learning to Generate Personalized Query Auto-Completions via a Multi-View Multi-Task Attentive Approach</a></p>
+<a id="more"></a>
+<h1 id="0x00-问题背景"><a href="#0x00-问题背景" class="headerlink" title="0x00 问题背景"></a>0x00 问题背景</h1><p>QAC，Query Auto-Completion</p>
+<p><strong>三个要求</strong><br>一个好的QAC系统需要达到以下三个要求：</p>
+<ol>
+<li>前缀词要包含于每一个推荐的查询词中；</li>
+<li>在线服务要能够实现查询词自动填充，无论前缀词是否合理；</li>
+<li>最关键的是，所有提供的候选查询词，都应该和用户当前的搜索意图相关。</li>
+</ol>
+<p><strong>两步模型</strong><br>大多数在线搜索服务使用两步模型：匹配和排序。</p>
+<ol>
+<li>匹配（Match），和召回含义相似，从词库中召回一批完整的查询词，其中包含很多从搜索日志中提取出的热门词；</li>
+<li>排序（Rank），就需要对召回的候选词进行排序，排序应该依据搜索词和用户搜索意图的符合程度；</li>
+</ol>
+<p>最后，根据实际的展示框大小，列出排名靠前的搜索词</p>
+<p><strong>两个问题</strong><br>当前QAC系统存在两个问题：缺乏个性化和未登录搜索词。</p>
+<ol>
+<li>缺乏个性化（Weak Personalization），由于趋向于将热门词排得很靠前，导致有些词甚至和用户搜索意图关系不大，这种情况在前缀词非常短的时候经常出现。为了解决这一问题，一般会在learning to rank框架中考虑多种特征，例如搜索上下文、时间、搜索人的角色、重构行为和在线趋势。但是还没有考虑给用户多种形式的历史行为进行建模（例如搜索历史、浏览历史）。</li>
+<li>未登录搜索词（Unseen Queries），如果用户输入的搜索词没有在词库中出现过，或者更进一步，用户输入的词无法召回任何一个候选词。一般会用RNN等语言模型为输入的前缀词自动生成完整的搜索词，这样的解决方案会出现严重的缺乏个性化的问题。</li>
+</ol>
+<h1 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h1><p>文章提出新模型，一个重要目标从用户历史行为中建模表示出用户近期的搜索意图。但是用户历史行为存在多样性和动态性，多样性指的是用户历史行为中包含有很多个人兴趣，但不是每一个都和当前的搜索意图相关；动态性指的是用户的行为是动态变化的，其中可能存在复杂的联系。</p>
+<p>文章提出新模型M<sup>2</sup>A（Multi-view Multi-task Attentive）从两个角度提取用户历史行为中的有用信息：搜索词历史和浏览物品历史。用一个基于Transformer的层次编码器，先提取历史行为中每一个具体的特征，再提取行为序列的特征；然后在前缀词和多角度历史行为信息之间构建注意力机制，选择最相关和最有用的信息。模型的下游任务有两个：点击率预估和搜索词生成，两个任务同时进行。</p>
+<p><img src="/2020/12/09/Alibaba-M2A/M2A模型结构.png" alt="M&lt;sup&gt;2&lt;/sup&gt;A模型结构图"></p>
+<h2 id="Prefix-Transformer-Encoder"><a href="#Prefix-Transformer-Encoder" class="headerlink" title="Prefix Transformer Encoder"></a>Prefix Transformer Encoder</h2><p>结构图中间部分。</p>
+<p>前缀词（Prefix）送入一个Transformer编码器中进行编码，这主要是为后续注意力机制做铺垫。</p>
+<h2 id="Multi-View-Attentive-Hierarchical-Encoding"><a href="#Multi-View-Attentive-Hierarchical-Encoding" class="headerlink" title="Multi-View Attentive Hierarchical Encoding"></a>Multi-View Attentive Hierarchical Encoding</h2><p>结构图左边部分。</p>
+<p>多角度、多层次、带注意力的对历史行为的编码。这个名字就包含了这个编码中的方法细节</p>
+<ul>
+<li>Hierarchical 指的是行为级编码（Behavior-Level）和上下文级编码（Context-Level）；</li>
+<li>Attentive 指的是模型中用到了注意力机制（Multi-Head Context Attention）；</li>
+<li>Multi-View 指的是搜索词历史和浏览物品历史（Multi-View Information Selection）。</li>
+</ul>
+<p>接下来按照顺序介绍这三部分</p>
+<h3 id="Behavior-Level-Transformer-Encoder-with-Multi-Head-Pooling"><a href="#Behavior-Level-Transformer-Encoder-with-Multi-Head-Pooling" class="headerlink" title="Behavior-Level Transformer Encoder with Multi-Head Pooling"></a>Behavior-Level Transformer Encoder with Multi-Head Pooling</h3><p>行为级编码。</p>
+<p><strong>Transformer and Embedding Layers</strong><br>常规的Transformer，在Embedding Layer有加上Positional Enocding</p>
+<p><strong>Multi-Head Pooling</strong><br>为了从长度不固定的行为特征中得到固定长度的特征表示，使用到了这个技术，本质还是注意力机制，多每一个head的输出进行加权求和并Layer Normalization</p>
+<h3 id="Context-Level-Transformer-Encoder："><a href="#Context-Level-Transformer-Encoder：" class="headerlink" title="Context-Level Transformer Encoder："></a>Context-Level Transformer Encoder：</h3><p>上下文级编码。</p>
+<h3 id="Multi-Head-Context-Attention"><a href="#Multi-Head-Context-Attention" class="headerlink" title="Multi-Head Context Attention"></a>Multi-Head Context Attention</h3><p>上下文多头注意力。</p>
+<p>利用了前面Prefix的编码结果，对用户多个历史行为构建注意力机制，加权求和得到每一个角度的历史行为的上下文级特征，后续通过拼接（Combination）送入下游任务。</p>
+<h3 id="Multi-View-Information-Selection"><a href="#Multi-View-Information-Selection" class="headerlink" title="Multi-View Information Selection"></a>Multi-View Information Selection</h3><p>多角度信息选择。</p>
+<p>由于用户会点击和自己搜索意图相近的物品，所以浏览历史可以作为搜索历史的补充，利用这两个角度的历史行为可以得到更综合的信息。</p>
+<h2 id="Multi-Task-Learning"><a href="#Multi-Task-Learning" class="headerlink" title="Multi-Task Learning"></a>Multi-Task Learning</h2><p>结构图右边部分。</p>
+<p>下游是多任务学习，一个任务是根据前缀词（Prefix）生成完整的搜索词（Query），另一个是搜索词的点击率预估。在实际运用时，CTR预估任务可以给出一个推荐搜索词的list，Transformer Decoder生成的词最为补充放置在list的靠前的位置。</p>
+<p><strong>Query Generation</strong><br>这是一个Transformer Decoder，使用Transformer的解码器直接生成候选词。这是端到端（end-to-end）的流程，需要最大化生成词出现的概率，用MLE（极大似然估计，Maximum Likelihood Estimation）的方法进行优化。训练时，可以使用用户输入的前缀和点击的搜索词构成训练数据，但是对于未登录词，无法采集样本，可以使用老方法，从完整的搜索词中切分出前缀，构造数据。</p>
+<p><strong>CTR Prediction</strong><br>数据的label：1代表点击、0代表没有点击。预测出点击概率，按照概率进行排序。给定用户意图特征和一个候选词特征，一起送入全连接层，用MLP（多层感知机，Multi-Layer Perceptron）输出点击概率。实际运用时，正样本好采集，负样本需要构造，最后最小化交叉熵损失。</p>
+<h1 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h1><p>文章提出了一个新的数据集：TaobaoQAC，包含了丰富的“前缀-搜索词”（Prefix-Query）点击行为。</p>
+]]></content>
+      <categories>
+        <category>论文笔记</category>
+      </categories>
+      <tags>
+        <tag>多任务学习</tag>
+        <tag>搜索</tag>
+        <tag>QAC</tag>
       </tags>
   </entry>
 </search>
