@@ -83,6 +83,14 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
 </table>
 </div>
 ]]></content>
+      <categories>
+        <category>论文笔记</category>
+      </categories>
+      <tags>
+        <tag>多任务学习</tag>
+        <tag>推荐</tag>
+        <tag>CTR预估</tag>
+      </tags>
   </entry>
   <entry>
     <title>Hello World</title>
@@ -214,5 +222,11 @@ A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\time
 <p>在Python中，Numpy的SVD分解方法，返回的奇异值已经降序排序，奇异向量也对应调整过位置，运用矩阵切割就可以实现近似。</p>
 <p>矩阵的SVD分解主要运用在利用协同过滤方法实现推荐系统中，充分利用奇异值和奇异向量，对没有直接关联的用户和商品，预测出用户对商品的评价，据此选择是否推荐。</p>
 ]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>SVD</tag>
+      </tags>
   </entry>
 </search>
