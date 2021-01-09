@@ -4,6 +4,7 @@
     <title>阿里巴巴CVR预估模型：ESMM</title>
     <url>/2020/12/01/Alibaba-ESMM/</url>
     <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1804.07931">Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate</a></p>
+<a id="more"></a>
 <h2 id="0x00-CVR与CTR的区别"><a href="#0x00-CVR与CTR的区别" class="headerlink" title="0x00 CVR与CTR的区别"></a>0x00 CVR与CTR的区别</h2><p>CTR是点击率，CVR是转化率，点击率问题非常直接，其含义只有两步：</p>
 <ol>
 <li>页面曝光</li>
@@ -104,8 +105,9 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
     <title>my first blog</title>
     <url>/2020/05/13/my-first-blog/</url>
     <content><![CDATA[<h3 id="this-is-my-first-hexo-blog"><a href="#this-is-my-first-hexo-blog" class="headerlink" title="this is my first hexo blog"></a>this is my first hexo blog</h3><a id="more"></a>
-<p>$f(x)=\frac{P(x)}{Q(x)}$</p>
-]]></content>
+<p>test</p>
+<script type="math/tex; mode=display">
+f(x)=\frac{P(x)}{Q(x)}</script>]]></content>
       <categories>
         <category>Introduction</category>
       </categories>
@@ -113,5 +115,104 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
         <tag>hexo</tag>
         <tag>next</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>支持向量机（SVM）数学推导思路</title>
+    <url>/2020/06/03/SVM-math/</url>
+    <content><![CDATA[<h1 id="相关定义和说明"><a href="#相关定义和说明" class="headerlink" title="相关定义和说明"></a>相关定义和说明</h1><p>数据集定义为： $\left\{ (x_{i}, y_{i}) \right\}_{i=1}^{N}$ ，其中 $x_{i}\in \mathbb{R}^{p}$ ， $y_{i} \in \left\{ -1, +1 \right\}$ </p>
+<p>模型定义为： $f\left( x \right) = \text{sign}\left( w^{T} x + b \right)$ ，其中 $w \in \mathbb{R}^{p}$ </p>
+<a id="more"></a>
+<p>整体知识框架为</p>
+<ul>
+<li>Hard-Margin</li>
+<li>Soft-Margin</li>
+</ul>
+<p>具体到以上两部分推导的内部，运用到了</p>
+<ul>
+<li>间隔</li>
+<li>对偶</li>
+<li>核技巧（选择性使用）</li>
+</ul>
+<h2 id="Hard-Margin-硬间隔"><a href="#Hard-Margin-硬间隔" class="headerlink" title="Hard-Margin 硬间隔"></a>Hard-Margin 硬间隔</h2><p>设 $\text{margin}\left( w, b \right)$ 表示给定模型参数的情况下，所有样本到分类超平面的最小距离</p>
+<script type="math/tex; mode=display">
+\text{margin}\left( w, b \right)=\min distance\left( w, b, x_{i} \right)=\min\frac{1}{\left| \left| w \right| \right|}\left| w^{T}x+b \right|=\min\frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right)</script><p>目标是将这个值最大化，优化目标为</p>
+<script type="math/tex; mode=display">
+\max_{w, b}\min_{x_{i}}\ \frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right) \qquad \text{s.t.}\quad y_{i}\left( w^{T} x_{i}+b \right)> 0</script><p>令 $y_{i}\left( w^{T} x_{i}+b \right)\geq 1$ ，则优化目标变为</p>
+<script type="math/tex; mode=display">
+\max_{w, b}\ \frac{1}{\left| \left| w \right| \right|} \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>等价于</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>接下来试图让模型参数不受可行条件约束，该优化问题的拉格朗日函数为</p>
+<script type="math/tex; mode=display">
+L\left( w, b, \lambda \right)=\frac{1}{2}w^{T}w + \sum_{i=1}^{N}{\lambda_{i}\left[1- y_{i}\left( w^{T}x_{i}+b \right) \right]}</script><p>其中 $\lambda\in \mathbb{R}^p$ 且 $\lambda_{i}\geq 0$ </p>
+<p>根据广义拉格朗日函数，优化目标等价于（证明略）</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\max_{\lambda}\ L\left( w, b, \lambda \right) \qquad \text{s.t.} \quad \lambda_{i}\geq 0</script><p>接下来用求导方法求解 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial b} = 0\quad \Rightarrow \quad\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>代入拉格朗日函数后继续求导</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial w} = 0\quad \Rightarrow \quad w=\sum_{i=1}^{N}{\lambda_{i}y_{i}x_{i}}</script><p>继续带入拉格朗日函数，求得 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
+<script type="math/tex; mode=display">
+L\left( w, b, \lambda \right)=-\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}+\sum_{i=1}^{N}{\lambda_{i}}</script><p>代入对偶问题的优化目标，求这个最小值关于 $\lambda$ 的最大值，优化目标可以写成（下方通过提出负号，将最大化写为最小化）</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad \lambda_{i}\geq 0，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>求解该问题（可以用SMO算法）可以得到最优解 $\lambda^{\ast} = \left( \lambda_{1}^{\ast},\lambda_{1}^{\ast},…,\lambda_{N}^{\ast} \right)^{T}$ </p>
+<p>接下来根据KKT条件求解模型参数的最优解。KKT条件包括三类条件</p>
+<ul>
+<li>求导为0条件： $\frac{\partial L}{\partial w}=0，\frac{\partial L}{\partial b}=0，\frac{\partial L}{\partial \lambda}=0$ </li>
+<li>可行条件： $\lambda_{i}^{\ast}\geq 0，1-y_{i}\left( w^{T}x_{i}+b \right)\leq 0$ </li>
+<li>松弛互补条件： $\lambda_{i}^{\ast}\left[ 1-y_{i}\left( w^{T}x_{i}+b \right) \right]=0$ </li>
+</ul>
+<p>根据KKT条件中的松弛互补条件，求解得</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
+b^{\ast}=y_{k}-w^{\ast T}x_{k}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x^{k}}</script><p>其中样本 $\left( x_{k}, y_{k} \right)$ 满足 $1-y_{i}\left( w^{T}x_{i}+b \right)= 0，\lambda_{k} &gt;0$ ，这个样本就是支持向量</p>
+<p>最终，决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h2 id="Soft-Margin-软间隔"><a href="#Soft-Margin-软间隔" class="headerlink" title="Soft-Margin 软间隔"></a>Soft-Margin 软间隔</h2><p>与Hard-Margin相比，可以允许一点点错误，优化目标可以写为</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w+\text{loss}</script><p>其中的损失函数为Hinge-Loss，即合页损失函数</p>
+<script type="math/tex; mode=display">
+\text{loss} = \sum_{i=1}^{N}{\max\left\{ 0,\ 1-y_{i}\left( w^{T}x_{i}+b \right)  \right\}}</script><p>令 $\xi_{i} = 1-y_{i}\left( w^{T}x_{i}+b \right)$ ，$\xi_{i}\geq 0$ ，则优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w+C\sum_{i=1}^{N}{\xi_{i}} \qquad \text{s.t.}\quad y_{i}\left( w^{T}x_{i}+b \right)\geq1-\xi_{i}，\xi_{i}\geq0</script><p>其中，$C$ 为超参数。与Hard-Margin的推导类似，最终优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>通过对 $\lambda$ 添加上限，影响了支持向量，影响了最优解。同样方法求得</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
+b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x_{k}}</script><p>最终决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h2 id="Kernel-核函数"><a href="#Kernel-核函数" class="headerlink" title="Kernel 核函数"></a>Kernel 核函数</h2><p>将普通SVM中的 $x$ 进行替换， $x\rightarrow\phi\left( x \right)$ ，核函数 $K\left( x, z \right)=\phi\left( x \right)^{T}\phi\left( z \right)$ ，以Soft-Margin为例，优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}K\left( x_{i}, x_{k} \right)}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>同样的方法求解得到</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)}\\
+b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)^{T}\phi\left( x_{k} \right)}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x_{k} \right)}</script><p>最终决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x \right)}  + b^{\ast} \right)</script><p>另外，常用核函数有</p>
+<ul>
+<li>多项式核函数</li>
+<li>高斯核函数</li>
+</ul>
+<h2 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h2>]]></content>
+  </entry>
+  <entry>
+    <title>矩阵SVD分解</title>
+    <url>/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/</url>
+    <content><![CDATA[<p>特征值分解矩阵不能适用于所有矩阵，对于无法进行特征值分解的矩阵，我们使用SVD分解的方法。</p>
+<a id="more"></a>
+<p>对任意一个 $m\times n$ 矩阵 $A$ ，一定可以进行SVD分解，数学形式为</p>
+<script type="math/tex; mode=display">
+A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}</script><p>其中，矩阵 $U$ 的每一个列向量是左奇异向量，对应 $AA^{T}$ 的特征向量，矩阵 $V$ 的每一个列向量（也就是矩阵 $V^{T}$ 的每一个行向量）是右奇异向量，对应 $A^{T}A$  的特征向量。</p>
+<p>另外，矩阵 $D$ 有可能是“高瘦型”，也有可能是“矮胖型”，这取决于矩阵 $A$ 的形状，但是不论形状如何，矩阵 $D$ 只有在主对角线上存在非零元素，这些元素是 $AA^{T}$ 的特征值的算数平方根，也是 $A^{T}A$ 的特征值的算数平方根，称为矩阵 $A$ 的奇异值。</p>
+<p>Python中的Numpy库有SVD分解方法。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = np.array([[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>],[<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a</span><br><span class="line">array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>],</span><br><span class="line">       [<span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>]])</span><br></pre></td></tr></table></figure>
+<p>首先定义一个2行4列的矩阵，其中元素的值随意。<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>u, d, vt = np.linalg.svd(a)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>u</span><br><span class="line">array([[-<span class="number">0.37616823</span>, -<span class="number">0.92655138</span>],</span><br><span class="line">       [-<span class="number">0.92655138</span>,  <span class="number">0.37616823</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d</span><br><span class="line">array([<span class="number">14.22740741</span>,  <span class="number">1.25732984</span>])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>vt</span><br><span class="line">array([[-<span class="number">0.35206169</span>, -<span class="number">0.44362578</span>, -<span class="number">0.53518987</span>, -<span class="number">0.62675396</span>],</span><br><span class="line">       [ <span class="number">0.75898127</span>,  <span class="number">0.3212416</span> , -<span class="number">0.11649807</span>, -<span class="number">0.55423774</span>],</span><br><span class="line">       [-<span class="number">0.40008743</span>,  <span class="number">0.25463292</span>,  <span class="number">0.69099646</span>, -<span class="number">0.54554195</span>],</span><br><span class="line">       [-<span class="number">0.37407225</span>,  <span class="number">0.79697056</span>, -<span class="number">0.47172438</span>,  <span class="number">0.04882607</span>]])</span><br></pre></td></tr></table></figure><br>可以看出左右奇异向量所在的矩阵的形状。特别注意，中间的矩阵 $D$ 只保存了主对角线上的非零元素，并且是按照由大到小的顺序排列。</p>
+<p>矩阵SVD分解是为了减少大矩阵在计算机中的存储，提高矩阵运算速度。我们需要在数学表达上进一步讨论。</p>
+<script type="math/tex; mode=display">
+A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}=\sum_{i=1}^{r}{\lambda_{i}u_{i}v_{i}}</script><p>其中，求和表达式中的 $r$ 是矩阵 $A$ 的非零奇异值个数，也是矩阵 $A$ 的秩， $\lambda$ 是奇异值。求和表达式展开后，我们只保留了矩阵 $D$ 主对角线上的非零奇异值，并按照 $\lambda$ 降序排列每一项，保留系数大的项，舍去系数小的项，实现近似，减少需要存储的值。如果只需要保留前 $k$ 项，则可以写为</p>
+<script type="math/tex; mode=display">
+A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\times k}V^{T}_{k\times n}</script><p>在应用中，例如推荐系统中，由于用户和商品数量极其庞大，由用户和商品构成的矩阵也非常庞大，矩阵中每一个元素表达了某个用户对某个商品的评价或喜好。对于一个用户，使用他对每一个商品的评价构成的向量作为描述这个用户的特征，同样对一个商品，我们使用每一用户对它的评价作为这个商品的特征。在使用了SVD分解并近似后，其实是舍弃了小奇异值所对应的“特征”向量（这里的特征向量是描述用户或商品特征的向量），减少了运算量。</p>
+<p>在Python中，Numpy的SVD分解方法，返回的奇异值已经降序排序，奇异向量也对应调整过位置，运用矩阵切割就可以实现近似。</p>
+<p>矩阵的SVD分解主要运用在利用协同过滤方法实现推荐系统中，充分利用奇异值和奇异向量，对没有直接关联的用户和商品，预测出用户对商品的评价，据此选择是否推荐。</p>
+]]></content>
   </entry>
 </search>

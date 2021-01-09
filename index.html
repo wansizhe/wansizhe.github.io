@@ -353,87 +353,263 @@
 
       
         
-          
-            <p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1804.07931">Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate</a></p>
-<h2 id="0x00-CVR与CTR的区别"><a href="#0x00-CVR与CTR的区别" class="headerlink" title="0x00 CVR与CTR的区别"></a>0x00 CVR与CTR的区别</h2><p>CTR是点击率，CVR是转化率，点击率问题非常直接，其含义只有两步：</p>
-<ol>
-<li>页面曝光</li>
-<li>用户点击</li>
-</ol>
-<p>转化率中涉及的一般是转化为收益的行为，例如淘宝场景中的下单购买。转化率问题在业务逻辑上没有点击率问题那么简单，通常包含三步：</p>
-<ol>
-<li>页面曝光</li>
-<li>用户点击</li>
-<li>用户购买</li>
-</ol>
-<p><img src="/2020/12/01/Alibaba-ESMM/CTR和CVR的样本关系.png" alt="CTR和CVR的样本关系"></p>
-<p>转化行为发生前，一定会出现点击行为，这是不可避免的。但是CVR预估问题，最终预估的概率不是“点击且转化”（这是CTCVR问题），而是“点击条件下转化”，这之间的区别和联系可以用下面这个式子表达</p>
-<script type="math/tex; mode=display">
-P\left(click,conversion\right) = P\left(click\right)P\left(conversion|click\right)</script><p>也就是</p>
-<script type="math/tex; mode=display">
-P_{CTCVR} = P_{CTR}\cdot P_{CVR}</script><p>所以不能使用全部的样本进行训练，假设样本由特征和标签组成，标签为1，代表成功转化，样本特征如果不做特别注明，那么就无法知道样本是否被点击过，这样训练的模型预测的是CTCVR，而不是CVR。联系实际场景，很多商品你没有购买的直接原因是你没有点击它，CVR预估模型需要预测一个物品假设你点击了，买的概率有多大。</p>
-<p>从以上问题中梳理出以下两个重要问题：</p>
-<ol>
-<li>Sample Selection Bias（SSB）。通常CVR预估问题在模型训练时，提供的样本局限于被点击的记录，其中成功转化的作为正样本，没有转化的作为负样本。但是在预测时，是对所有样本进行预测，而不是对被点击的样本进行预测。样本的选择造成了模型的偏差。</li>
-<li>Data Sparsity（DS）。当样本被局限于点击过的数据时，样本量会骤减，远不如CTR问题中曝光的数据量。</li>
-</ol>
-<h2 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h2><p><img src="/2020/12/01/Alibaba-ESMM/ESMM.png" alt="ESMM模型结构图"></p>
-<p>这个模型体现出了CTCVR、CTR、CVR三者的关系，左边负责预测CVR，右边负责预测CTR，顶部通过相乘预测CTCVR。左侧CVR预估模型不直接参加计算损失函数，损失函数只包含CTR和CTCVR两部分</p>
-<script type="math/tex; mode=display">
-Loss\left(\theta_{ctr},\theta_{cvr}\right) = 
-\sum_{i=1}^{N}{L\left(y_{i},f\left(x_{i};\theta_{ctr}\right)\right)}+
-\sum_{i=1}^{N}{L\left(y_{i}\&z_{i},f\left(x_{i};\theta_{ctr}\right)\cdot f\left(x_{i};\theta_{cvr}\right)\right)}</script><p>这样设计，是因为CTR预估任务和CTCVR预估任务可以使用全部的样本，通过“曲线救国”的方式，绕开了CVR预估的样本问题。</p>
-<h2 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h2><p>作者对比的模型如下</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">模型</th>
-<th style="text-align:center">结构说明（逐渐复杂）</th>
-<th style="text-align:center">训练样本（逐渐扩充）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">BASE</td>
-<td style="text-align:center">仅CVR部分</td>
-<td style="text-align:center">仅包含点击样本</td>
-</tr>
-<tr>
-<td style="text-align:center">AMAN</td>
-<td style="text-align:center">同上</td>
-<td style="text-align:center">从未点击样本中采样作为负例加入</td>
-</tr>
-<tr>
-<td style="text-align:center">OVERSAMPLING</td>
-<td style="text-align:center">同上</td>
-<td style="text-align:center">对正例（点击并转化）过采样</td>
-</tr>
-<tr>
-<td style="text-align:center">UNBIAS</td>
-<td style="text-align:center">同上</td>
-<td style="text-align:center">加入rejection sampling</td>
-</tr>
-<tr>
-<td style="text-align:center">DIVISION</td>
-<td style="text-align:center">分别训练CTR和CTCVR，相除得CVR</td>
-<td style="text-align:center">同上</td>
-</tr>
-<tr>
-<td style="text-align:center">ESMM-NS</td>
-<td style="text-align:center">ESMM模型，embedding层不共享参数</td>
-<td style="text-align:center">同上</td>
-</tr>
-<tr>
-<td style="text-align:center">ESMM</td>
-<td style="text-align:center">完整的ESMM模型</td>
-<td style="text-align:center">同上</td>
-</tr>
-</tbody>
-</table>
-</div>
+          <p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1804.07931">Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate</a></p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/12/01/Alibaba-ESMM/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/06/03/SVM-math/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Record for Myself">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/03/SVM-math/" itemprop="url">支持向量机（SVM）数学推导思路</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-03T21:40:35+08:00">
+                2020-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
 
           
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="相关定义和说明"><a href="#相关定义和说明" class="headerlink" title="相关定义和说明"></a>相关定义和说明</h1><p>数据集定义为： $\left\{ (x_{i}, y_{i}) \right\}_{i=1}^{N}$ ，其中 $x_{i}\in \mathbb{R}^{p}$ ， $y_{i} \in \left\{ -1, +1 \right\}$ </p>
+<p>模型定义为： $f\left( x \right) = \text{sign}\left( w^{T} x + b \right)$ ，其中 $w \in \mathbb{R}^{p}$ </p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/06/03/SVM-math/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Record for Myself">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/" itemprop="url">矩阵SVD分解</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-15T21:56:38+08:00">
+                2020-05-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>特征值分解矩阵不能适用于所有矩阵，对于无法进行特征值分解的矩阵，我们使用SVD分解的方法。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -813,7 +989,7 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
