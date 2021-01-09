@@ -5,7 +5,7 @@
     <url>/2020/12/01/Alibaba-ESMM/</url>
     <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1804.07931">Entire Space Multi-Task Model: An Eﬀective Approach for Estimating Post-Click Conversion Rate</a></p>
 <a id="more"></a>
-<h2 id="0x00-CVR与CTR的区别"><a href="#0x00-CVR与CTR的区别" class="headerlink" title="0x00 CVR与CTR的区别"></a>0x00 CVR与CTR的区别</h2><p>CTR是点击率，CVR是转化率，点击率问题非常直接，其含义只有两步：</p>
+<h1 id="0x00-CVR与CTR的区别"><a href="#0x00-CVR与CTR的区别" class="headerlink" title="0x00 CVR与CTR的区别"></a>0x00 CVR与CTR的区别</h1><p>CTR是点击率，CVR是转化率，点击率问题非常直接，其含义只有两步：</p>
 <ol>
 <li>页面曝光</li>
 <li>用户点击</li>
@@ -27,13 +27,13 @@ P_{CTCVR} = P_{CTR}\cdot P_{CVR}</script><p>所以不能使用全部的样本进
 <li>Sample Selection Bias（SSB）。通常CVR预估问题在模型训练时，提供的样本局限于被点击的记录，其中成功转化的作为正样本，没有转化的作为负样本。但是在预测时，是对所有样本进行预测，而不是对被点击的样本进行预测。样本的选择造成了模型的偏差。</li>
 <li>Data Sparsity（DS）。当样本被局限于点击过的数据时，样本量会骤减，远不如CTR问题中曝光的数据量。</li>
 </ol>
-<h2 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h2><p><img src="/2020/12/01/Alibaba-ESMM/ESMM.png" alt="ESMM模型结构图"></p>
+<h1 id="0x01-模型"><a href="#0x01-模型" class="headerlink" title="0x01 模型"></a>0x01 模型</h1><p><img src="/2020/12/01/Alibaba-ESMM/ESMM.png" alt="ESMM模型结构图"></p>
 <p>这个模型体现出了CTCVR、CTR、CVR三者的关系，左边负责预测CVR，右边负责预测CTR，顶部通过相乘预测CTCVR。左侧CVR预估模型不直接参加计算损失函数，损失函数只包含CTR和CTCVR两部分</p>
 <script type="math/tex; mode=display">
 Loss\left(\theta_{ctr},\theta_{cvr}\right) = 
 \sum_{i=1}^{N}{L\left(y_{i},f\left(x_{i};\theta_{ctr}\right)\right)}+
 \sum_{i=1}^{N}{L\left(y_{i}\&z_{i},f\left(x_{i};\theta_{ctr}\right)\cdot f\left(x_{i};\theta_{cvr}\right)\right)}</script><p>这样设计，是因为CTR预估任务和CTCVR预估任务可以使用全部的样本，通过“曲线救国”的方式，绕开了CVR预估的样本问题。</p>
-<h2 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h2><p>作者对比的模型如下</p>
+<h1 id="0x02-实验"><a href="#0x02-实验" class="headerlink" title="0x02 实验"></a>0x02 实验</h1><p>作者对比的模型如下</p>
 <div class="table-container">
 <table>
 <thead>
@@ -292,6 +292,49 @@ A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\time
         <tag>多任务学习</tag>
         <tag>搜索</tag>
         <tag>QAC</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>生成高质量查询推荐词</title>
+    <url>/2020/12/13/Generate-QS/</url>
+    <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1802.07997">Generating High-Quality Query Suggestion Candidates for Task-Based Search</a></p>
+<h1 id="0x00-概述"><a href="#0x00-概述" class="headerlink" title="0x00 概述"></a>0x00 概述</h1><p>查询词推荐有两种形式，查询词补齐（query completions）和查询词优化（query refinements）。查询推荐包括两个步骤：先做推荐词的生成（suggestion generation），然后进行推荐词排序（suggestion ranking），这篇论文主要讲第一步，目标是生成足够多的高质量的候选词，并且保证多样性，以供之后的排序。</p>
+<p>作者后文讲了三种方法，通过实验发现三种方法都可以产生了独特的候选词，所以最好是将它们合并起来交给排序模型。</p>
+<h1 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h1><p>假设起始的搜索词为 $q_{0}$ ，给出的推荐词是 $q$ ，需要最大化 $P\left(q|q_{0}\right)$</p>
+<h2 id="Popular-Suffix-Model"><a href="#Popular-Suffix-Model" class="headerlink" title="Popular Suffix Model"></a>Popular Suffix Model</h2><p>对一个输入的查询词，从日志信息中获取出现次数最多的后缀词$s$，通过拼接产生推荐词。</p>
+<script type="math/tex; mode=display">
+P\left(q|q_{0}\right)=pop\left(s\right)</script><p>其中$pop\left(s\right)$和在日志中出现的频率相关</p>
+<h2 id="Neural-Language-Model"><a href="#Neural-Language-Model" class="headerlink" title="Neural Language Model"></a>Neural Language Model</h2><p>以词为单位将输入的查询词扩展成推荐词，使用的是神经语言模型。</p>
+<script type="math/tex; mode=display">
+q_{0}=\left(c_{1},c_{2},...,c_{n}\right) \\
+s=\left(c_{n+1},c_{n+2},...,c_{m}\right) \\
+q=q_{0}\oplus s=\left(c_{1},c_{2},...,c_{n},c_{n+1},c_{n+2},...,c_{m}\right)</script><p>一般使用循环神经网络，例如LSTM、GRU，来根据已有的序列，预测出后续的序列。</p>
+<p>作者的实验设置：hidden_size为512，embedding_layer参数直接从Bing预训练好的迁移过来，beam_search_width设置为30。</p>
+<h2 id="Sequence-to-Sequence-Model"><a href="#Sequence-to-Sequence-Model" class="headerlink" title="Sequence to Sequence Model"></a>Sequence to Sequence Model</h2><p>这个模型包含了语义理解，可以做到refinement，前两种方法只能做到completion将输入的查询词”翻译“成新的搜索词来推荐给用户</p>
+<script type="math/tex; mode=display">
+q_{0} = \left(w_{1},w_{2},...,w_{n}\right) \\
+q=\left(w'_{1},w'_{2},...,w'_{m}\right)</script><p>Seq2Seq模型的Encoder和Decoder可以使用LSTM或者GRU。</p>
+<p>作者在实验中使用的是GRU，编码器hidden_size为100，解码器hidden_size为200，使用Adam优化器，起始learning_rate为0.0001，dropout概率为0.5，beam_search_width设置为100。</p>
+<h1 id="0x02-数据来源"><a href="#0x02-数据来源" class="headerlink" title="0x02 数据来源"></a>0x02 数据来源</h1><p>三种数据来源</p>
+<ul>
+<li>AOL</li>
+<li>KnoweHow</li>
+<li>WikiAnswers</li>
+</ul>
+<p>两种数据组织形式：</p>
+<ul>
+<li>短文本集合，用于前两种方法，学习complete</li>
+<li>同session内的文本对（question-suggestion），用于最后一种方法，学习translate</li>
+</ul>
+]]></content>
+      <categories>
+        <category>论文笔记</category>
+      </categories>
+      <tags>
+        <tag>搜索</tag>
+        <tag>QS</tag>
+        <tag>LSTM</tag>
+        <tag>Seq2Seq</tag>
       </tags>
   </entry>
 </search>
