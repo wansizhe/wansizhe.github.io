@@ -87,7 +87,7 @@
 <meta property="og:description" content="相关定义和说明数据集定义为： $\left\{ (x_{i}, y_{i}) \right\}_{i&#x3D;1}^{N}$ ，其中 $x_{i}\in \mathbb{R}^{p}$ ， $y_{i} \in \left\{ -1, +1 \right\}$  模型定义为： $f\left( x \right) &#x3D; \text{sign}\left( w^{T} x + b \right)$ ，其中 $">
 <meta property="og:locale">
 <meta property="article:published_time" content="2020-06-03T13:40:35.000Z">
-<meta property="article:modified_time" content="2021-01-09T14:10:06.327Z">
+<meta property="article:modified_time" content="2021-01-29T14:15:24.392Z">
 <meta property="article:author" content="Sizhe Wan">
 <meta property="article:tag" content="SVM">
 <meta name="twitter:card" content="summary">
@@ -390,7 +390,7 @@
 <li>对偶</li>
 <li>核技巧（选择性使用）</li>
 </ul>
-<h2 id="Hard-Margin-硬间隔"><a href="#Hard-Margin-硬间隔" class="headerlink" title="Hard-Margin 硬间隔"></a>Hard-Margin 硬间隔</h2><p>设 $\text{margin}\left( w, b \right)$ 表示给定模型参数的情况下，所有样本到分类超平面的最小距离</p>
+<h1 id="Hard-Margin-硬间隔"><a href="#Hard-Margin-硬间隔" class="headerlink" title="Hard-Margin 硬间隔"></a>Hard-Margin 硬间隔</h1><p>设 $\text{margin}\left( w, b \right)$ 表示给定模型参数的情况下，所有样本到分类超平面的最小距离</p>
 <script type="math/tex; mode=display">
 \text{margin}\left( w, b \right)=\min distance\left( w, b, x_{i} \right)=\min\frac{1}{\left| \left| w \right| \right|}\left| w^{T}x+b \right|=\min\frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right)</script><p>目标是将这个值最大化，优化目标为</p>
 <script type="math/tex; mode=display">
@@ -424,7 +424,7 @@ w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
 b^{\ast}=y_{k}-w^{\ast T}x_{k}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x^{k}}</script><p>其中样本 $\left( x_{k}, y_{k} \right)$ 满足 $1-y_{i}\left( w^{T}x_{i}+b \right)= 0，\lambda_{k} &gt;0$ ，这个样本就是支持向量</p>
 <p>最终，决策函数为</p>
 <script type="math/tex; mode=display">
-f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h2 id="Soft-Margin-软间隔"><a href="#Soft-Margin-软间隔" class="headerlink" title="Soft-Margin 软间隔"></a>Soft-Margin 软间隔</h2><p>与Hard-Margin相比，可以允许一点点错误，优化目标可以写为</p>
+f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Soft-Margin-软间隔"><a href="#Soft-Margin-软间隔" class="headerlink" title="Soft-Margin 软间隔"></a>Soft-Margin 软间隔</h1><p>与Hard-Margin相比，可以允许一点点错误，优化目标可以写为</p>
 <script type="math/tex; mode=display">
 \min_{w, b}\frac{1}{2}w^{T}w+\text{loss}</script><p>其中的损失函数为Hinge-Loss，即合页损失函数</p>
 <script type="math/tex; mode=display">
@@ -437,7 +437,7 @@ f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x
 w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
 b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x_{k}}</script><p>最终决策函数为</p>
 <script type="math/tex; mode=display">
-f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h2 id="Kernel-核函数"><a href="#Kernel-核函数" class="headerlink" title="Kernel 核函数"></a>Kernel 核函数</h2><p>将普通SVM中的 $x$ 进行替换， $x\rightarrow\phi\left( x \right)$ ，核函数 $K\left( x, z \right)=\phi\left( x \right)^{T}\phi\left( z \right)$ ，以Soft-Margin为例，优化目标等价于</p>
+f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Kernel-核函数"><a href="#Kernel-核函数" class="headerlink" title="Kernel 核函数"></a>Kernel 核函数</h1><p>将普通SVM中的 $x$ 进行替换， $x\rightarrow\phi\left( x \right)$ ，核函数 $K\left( x, z \right)=\phi\left( x \right)^{T}\phi\left( z \right)$ ，以Soft-Margin为例，优化目标等价于</p>
 <script type="math/tex; mode=display">
 \min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}K\left( x_{i}, x_{k} \right)}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>同样的方法求解得到</p>
 <script type="math/tex; mode=display">
@@ -449,7 +449,7 @@ f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\le
 <li>多项式核函数</li>
 <li>高斯核函数</li>
 </ul>
-<h2 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h2>
+<h1 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h1>
       
     </div>
     
@@ -655,7 +655,7 @@ f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\le
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%AE%9A%E4%B9%89%E5%92%8C%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">相关定义和说明</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hard-Margin-%E7%A1%AC%E9%97%B4%E9%9A%94"><span class="nav-number">1.1.</span> <span class="nav-text">Hard-Margin 硬间隔</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Soft-Margin-%E8%BD%AF%E9%97%B4%E9%9A%94"><span class="nav-number">1.2.</span> <span class="nav-text">Soft-Margin 软间隔</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kernel-%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">Kernel 核函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SMO-%E7%AE%97%E6%B3%95"><span class="nav-number">1.4.</span> <span class="nav-text">SMO 算法</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%AE%9A%E4%B9%89%E5%92%8C%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">相关定义和说明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Hard-Margin-%E7%A1%AC%E9%97%B4%E9%9A%94"><span class="nav-number">2.</span> <span class="nav-text">Hard-Margin 硬间隔</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Soft-Margin-%E8%BD%AF%E9%97%B4%E9%9A%94"><span class="nav-number">3.</span> <span class="nav-text">Soft-Margin 软间隔</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kernel-%E6%A0%B8%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">Kernel 核函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SMO-%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">SMO 算法</span></a></li></ol></div>
             
 
           </div>
