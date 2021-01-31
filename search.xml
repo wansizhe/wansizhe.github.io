@@ -338,4 +338,821 @@ q=\left(w'_{1},w'_{2},...,w'_{m}\right)</script><p>Seq2Seq模型的Encoder和Dec
         <tag>Seq2Seq</tag>
       </tags>
   </entry>
+  <entry>
+    <title>期望最大算法（EM）数学推导思路</title>
+    <url>/2020/06/24/EM%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<h1 id="问题定义"><a href="#问题定义" class="headerlink" title="问题定义"></a>问题定义</h1><p>已知：</p>
+<ul>
+<li>观测变量 $X$</li>
+<li>人为定义或自然存在的隐变量 $Z$</li>
+<li>联合概率分布 $P\left( X,Z | \theta \right)$ </li>
+<li>条件概率分布 $P\left( Z | X, \theta \right)$</li>
+</ul>
+<a id="more"></a>
+<p>求解：</p>
+<ul>
+<li>模型参数 $\theta$</li>
+</ul>
+<p>根本思想：</p>
+<ul>
+<li>用极大似然估计求解， $\theta_{MLE}= \mathop{\arg\max}_{\theta}\ \log P\left( X|\theta \right)$ ，充分利用联合概率、条件概率和边缘概率的关系来帮助运算</li>
+</ul>
+<h1 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h1><p>输入： $X$ ， $Z$ ，$P\left( X,Z | \theta \right)，P\left( Z | X, \theta \right)$</p>
+<p>输出： $\theta$</p>
+<p>算法：</p>
+<ol>
+<li>初始化参数： <script type="math/tex; mode=display">
+\theta^{\left( 0 \right)}</script></li>
+<li>E-step，写出Q函数： <script type="math/tex; mode=display">
+Q\left( \theta, \theta^{\left( t \right)} \right)=E_{Z|X,\theta^{\left( t \right)}}\left[ \log P\left( X,Z|\theta \right) \right]=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log P\left( X,Z|\theta \right) \mathrm{d}Z</script></li>
+<li>M-step，最大化Q函数： <script type="math/tex; mode=display">
+\theta^{\left( t+1 \right)}=\mathop{\arg\max}_{\theta}\ Q\left( \theta, \theta^{\left( t \right)} \right)</script></li>
+</ol>
+<h1 id="数学推导"><a href="#数学推导" class="headerlink" title="数学推导"></a>数学推导</h1><p>推导目的： $\mathop{\arg\max}_{\theta}\ \log P\left( X|\theta \right)\quad\Rightarrow\quad \mathop{\arg\max}_{\theta}\ Q\left( \theta, \theta^{\left( t \right)} \right)$ </p>
+<h3 id="方法一（运用KL散度）"><a href="#方法一（运用KL散度）" class="headerlink" title="方法一（运用KL散度）"></a>方法一（运用KL散度）</h3><p>根据联合概率和边缘概率的关系，得到</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) = \log P\left( X,Z | \theta \right)-\log P\left( Z | X,\theta \right)</script><p>引入 Z 的概率分布函数 $q\left( Z \right)$ ，得到</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) = \log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)}-\log \frac{P\left( Z | X,\theta \right)}{q\left( Z \right)}</script><p>等式左边可以写成</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) = \log P\left( X | \theta \right) \int_{Z}q\left( Z \right) \mathrm{d}Z=\int_{Z}q\left( Z \right) \log P\left( X | \theta \right) \mathrm{d}Z</script><p>同理，右边也可以写成</p>
+<script type="math/tex; mode=display">
+\log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)}-\log \frac{P\left( Z | X,\theta \right)}{q\left( Z \right)}=\int_{Z}q\left( Z \right) \log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)} \mathrm{d}Z-\int_{Z}q\left( Z \right) \log \frac{P\left( Z | X,\theta \right)}{q\left( Z \right)} \mathrm{d}Z</script><p>定义Evidence Lower Bound（ELBO）</p>
+<script type="math/tex; mode=display">
+{\rm ELBO}=\int_{Z}q\left( Z \right) \log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)} \mathrm{d}Z</script><blockquote>
+<p>KL散度定义： ${\rm KL}\left( P || Q \right)=\int_{x}P\left( x \right)\log \frac{P\left( x \right)}{Q\left( x \right)} \mathrm{d}x\geq 0$ ，当且仅当 $P\left( x \right)=Q\left( x \right)$ 时等号成立。</p>
+</blockquote>
+<p>根据KL散度定义，可以得出</p>
+<script type="math/tex; mode=display">
+\int_{Z}q\left( Z \right) \log \frac{P\left( Z | X,\theta \right)}{q\left( Z \right)} \mathrm{d}Z={\rm KL}\left[ q\left( Z \right) || P\left( Z | X,\theta \right) \right]\geq0</script><p>当且仅当 $q\left( Z \right) = P\left( Z | X,\theta \right)$ 时等号成立。所以，根据以上可得</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) ={\rm ELBO}+ {\rm KL}\left[ q\left( Z \right) || P\left( Z | X,\theta \right) \right]\geq {\rm ELBO}</script><p>令 $q\left( Z \right) = P\left( Z | X,\theta^{\left( t \right)} \right)$ ，则等号成立，所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\hat{\theta}&=\mathop{\arg\max}_{\theta}\ {\rm ELBO}\\ 
+&=\mathop{\arg\max}_{\theta}\ \log P\left( X|\theta \right)\\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}q\left( Z \right) \log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)} \mathrm{d}Z \\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z | X,\theta^{\left( t \right)} \right) \log \frac{P\left( X,Z | \theta \right)}{P\left( Z | X,\theta^{\left( t \right)} \right)} \mathrm{d}Z \\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z | X,\theta^{\left( t \right)} \right) \left[ \log P\left( X,Z | \theta \right) - \log P\left( Z | X,\theta^{\left( t \right)} \right) \right] \mathrm{d}Z \\ 
+\end{aligned}</script><p>至此，可以看出 $\log P\left( Z | X,\theta^{\left( t \right)} \right)$ 与 $\theta$ 无关， $\theta^{\left( t \right)}$ 是上一轮迭代求出的结果，对当前来说是常数，所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\hat{\theta}&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z | X,\theta^{\left( t \right)} \right) \left[ \log P\left( X,Z | \theta \right) - \log P\left( Z | X,\theta^{\left( t \right)} \right) \right] \mathrm{d}Z \\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z | X,\theta^{\left( t \right)} \right) \log P\left( X,Z | \theta \right) \mathrm{d}Z \\ 
+&=\mathop{\arg\max}_{\theta}\ Q\left( \theta, \theta^{\left( t \right)} \right) \\ 
+\end{aligned}</script><h3 id="方法二（运用Jensen不等式）"><a href="#方法二（运用Jensen不等式）" class="headerlink" title="方法二（运用Jensen不等式）"></a>方法二（运用Jensen不等式）</h3><blockquote>
+<p>关于Jensen不等式的说明：设 $f\left( x \right)$ 为凸函数， $a\leq c\leq b$ ，存在 $t\in\left[ 0,1 \right]$ 使得 $c=ta+\left( 1-t \right)b$ ，那么有 $f\left( c \right)=f\left( ta+\left( 1-t \right)b \right)\geq tf\left( a \right)+\left( 1-t \right)f\left( b \right)$ ，由此可以推广出 $f\left( E\left[ x \right] \right)\geq E\left[ f\left( x \right) \right]$</p>
+</blockquote>
+<p>根据联合概率和边缘概率的关系可得</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) =\log \int_{Z}P\left( X,Z| \theta \right) \mathrm{d}Z</script><p>引入 Z 的概率分布函数 $q\left( Z \right)$ ，得到</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) =\log \int_{Z}\frac{P\left( X,Z| \theta \right)}{q\left( Z \right)}q\left( Z \right) \mathrm{d}Z = \log E_{q\left( Z \right)}\left[ \frac{P\left( X,Z| \theta \right)}{q\left( Z \right)} \right]</script><p>根据Jensen不等式，得到</p>
+<script type="math/tex; mode=display">
+\log P\left( X | \theta \right) = \log E_{q\left( Z \right)}\left[ \frac{P\left( X,Z| \theta \right)}{q\left( Z \right)} \right]\geq E_{q\left( Z \right)}\left[\log\frac{P\left( X,Z| \theta \right)}{q\left( Z \right)} \right]</script><p>当且仅当 $\frac{P\left( X,Z| \theta \right)}{q\left( Z \right)}$ 为常数时取等号。</p>
+<p>设 $\frac{P\left( X,Z| \theta \right)}{q\left( Z \right)}=c$ ，则 $q\left( Z \right)=\frac{1}{c}P\left( X,Z| \theta \right)$ ，又因为</p>
+<script type="math/tex; mode=display">
+1=\int_{Z}q\left( Z \right)\mathrm{d}Z=\int_{Z}\frac{1}{c}P\left( X,Z| \theta \right)\mathrm{d}Z=\frac{1}{c}P\left( X| \theta \right)</script><p>所以就有 $P\left( X| \theta \right)=c$ ，进而就有</p>
+<script type="math/tex; mode=display">
+q\left( Z \right)=\frac{P\left( X,Z| \theta \right)}{c}=\frac{P\left( X,Z| \theta \right)}{P\left( X| \theta \right)}=P\left( Z|X,\theta \right)</script><p>将前面Jensen不等式的结果展开，得到</p>
+<script type="math/tex; mode=display">
+E_{q\left( Z \right)}\left[\log\frac{P\left( X,Z| \theta \right)}{q\left( Z \right)} \right]=\int_{Z}q\left( Z \right) \log \frac{P\left( X,Z | \theta \right)}{q\left( Z \right)} \mathrm{d}Z={\rm ELBO}</script><p>令 $q\left( Z \right)=P\left( Z|X,\theta^{\left( t \right)} \right)$ ，代入后得到 </p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+{\rm ELBO}&=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \log \frac{P\left( X,Z | \theta \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)} \mathrm{d}Z\\ 
+&=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \left[\log P\left( X,Z | \theta \right)-\log P\left( Z|X,\theta^{\left( t \right)} \right)\right] \mathrm{d}Z \end{aligned}</script><p>因为 $\theta^{\left( t \right)}$ 是上一轮迭代求出的结果，对当前来说是常数，所以 $\log P\left( Z | X,\theta^{\left( t \right)} \right)$ 与 $\theta$ 无关，可以略去，因此得到</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\hat{\theta}&=\mathop{\arg\max}_{\theta}\ \log P\left( X|\theta \right)\\ 
+&=\mathop{\arg\max}_{\theta}\ {\rm ELBO} \\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \left[\log P\left( X,Z | \theta \right)-\log P\left( Z|X,\theta^{\left( t \right)} \right)\right] \mathrm{d}Z\\ 
+&=\mathop{\arg\max}_{\theta}\ \int_{Z}P\left( Z | X,\theta^{\left( t \right)} \right) \log P\left( X,Z | \theta \right) \mathrm{d}Z\\ 
+&= \mathop{\arg\max}_{\theta}\ Q\left( \theta, \theta^{\left( t \right)} \right) 
+\end{aligned}</script><h1 id="收敛性证明"><a href="#收敛性证明" class="headerlink" title="收敛性证明"></a>收敛性证明</h1><p>这里就是要证明EM算法一定可以达到优化参数的目的。</p>
+<p>优化目标是 $\hat{\theta}=\mathop{\arg\max}_{\theta}\ \log P\left( X|\theta \right)$ ，采用EM迭代算法，需要保证 $\theta^{\left( t+1 \right)}$ 比 $\theta^{\left( t \right)}$ 更优，也就是 $\log P\left( X| \theta^{\left( t+1 \right)}\right)\geq \log P\left( X| \theta^{\left( t \right)}\right)$ 。因此需要重点研究 $\log P\left( X|\theta \right)$ 的特点。</p>
+<script type="math/tex; mode=display">
+\log P\left( X|\theta \right)=\log \frac{P\left( X,Z|\theta \right)}{P\left( Z|X,\theta \right)} = \log P\left( X,Z|\theta \right)-\log P\left( Z|X,\theta \right)</script><p>左边：</p>
+<script type="math/tex; mode=display">
+\log P\left( X|\theta \right)=\log P\left( X|\theta \right)\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \mathrm{d}Z = \int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \log P\left( X|\theta \right) \mathrm{d}Z</script><p>同理，右边：</p>
+<script type="math/tex; mode=display">
+\log P\left( X,Z|\theta \right)-\log P\left( Z|X,\theta \right)=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \log P\left( X,Z|\theta \right) \mathrm{d}Z-\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \log P\left( Z|X,\theta \right) \mathrm{d}Z</script><p>令 $H\left( \theta , \theta^{\left( t \right)} \right)=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \log P\left( Z|X,\theta \right) \mathrm{d}Z$ ，得到</p>
+<script type="math/tex; mode=display">
+\log P\left( X|\theta \right)=Q\left( \theta , \theta^{\left( t \right)} \right)-H\left( \theta , \theta^{\left( t \right)} \right)</script><p>若要 $\log P\left( X| \theta^{\left( t+1 \right)}\right)\geq \log P\left( X| \theta^{\left( t \right)}\right)$ ，就需要满足 $Q\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)\geq Q\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right)$ 且 $H\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)\leq H\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right)$ ，前者天然成立，后者需要证明</p>
+<script type="math/tex; mode=display">
+H\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)- H\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right) = \int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)}\mathrm{d}Z</script><p>根据KL散度可以得到</p>
+<script type="math/tex; mode=display">
+\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)}\mathrm{d}Z=-{\rm KL}\left[ P\left( Z|X,\theta^{\left( t \right)} \right)||P\left( Z|X,\theta^{\left( t+1 \right)} \right) \right]\leq 0</script><p>因此得到</p>
+<script type="math/tex; mode=display">
+H\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)- H\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right)\leq0</script><p>或者根据Jensen不等式</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)}\mathrm{d}Z&=E_{Z|X,\theta^{\left( t \right)}}\left[ \log \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)} \right]\\ 
+&\leq\log E_{Z|X,\theta^{\left( t \right)}}\left[ \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)} \right]\\ 
+&=\log \int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right) \frac{P\left( Z|X,\theta^{\left( t+1 \right)} \right)}{P\left( Z|X,\theta^{\left( t \right)} \right)}\mathrm{d}Z\\ 
+&=\log \int_{Z}P\left( Z|X,\theta^{\left( t+1 \right)} \right)\mathrm{d}Z\\ 
+&=\log 1 \\ 
+&= 0 
+\end{aligned}</script><p>因此得到</p>
+<script type="math/tex; mode=display">
+H\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)- H\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right)\leq0</script><p>以上两种方法都可以证明 $H\left(\theta^{\left( t+1 \right)}, \theta^{\left( t \right)} \right)\leq H\left(\theta^{\left( t \right)}, \theta^{\left( t \right)} \right)$ </p>
+]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>EM</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>高斯混合模型（GMM）数学推导思路</title>
+    <url>/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/</url>
+    <content><![CDATA[<h1 id="模型理解"><a href="#模型理解" class="headerlink" title="模型理解"></a>模型理解</h1><p>已知，在数轴上按照某种概率分布采样，得到了如下图横轴上的红点。依据这些采样点反推出具体的概率分布，这就是我们想要做的事。</p>
+<a id="more"></a>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/一维GMM.png" alt="一维高斯混合模型示例"></p>
+<p>概率分布不能凭空猜测，我们假设所要求的概率分布是由多个高斯分布混合而成的，所谓“混合”，可以理解成“加权平均”，数学上可以写成</p>
+<script type="math/tex; mode=display">
+P\left( x \right)=\sum_{k=1}^{K}{\alpha_{k}\cdot\mathcal N\left( x| \mu_{k},\Sigma_{k} \right)}</script><p>其中，为简便，用 $\mathcal{N}$ 表示高斯分布的表达式， $\mu_{k}$ 表示第 $k$ 个高斯分布的均值向量， $\Sigma_{k}$ 表示第 $k$ 个高斯分布的协方差矩阵， $\alpha_{k}$ 表示第 $k$ 个高斯分布的权重系数，这个系数还满足</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{K}{\alpha_{k}}=1</script><p>有了这种几何理解，再看已知的采样点，可以看到明显的两个密集区域，说明这两个密集区域是概率较大的位置，很有可能是高斯分布的峰值位置，因此可以大致画出两个高斯分布的曲线（如上图蓝线和黄线）。</p>
+<p>类似的，也可以想象出一个二维平面中的采样点的分布，由此想像出二维高斯分布的叠加。如下图所示，二维高斯分布用“等高线”的形式大致画出。</p>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/二维GMM.png" alt="二维高斯混合模型示例"></p>
+<p>以上，是对GMM的几何理解。但是高斯分布的维度限制这种几何角度的想象，更进一步理解，需要从概率生成模型的角度理解。高斯混合模型是一种较简单的概率图模型，也是一种简单的生成模型。</p>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/GMM概率生成.png" alt="GMM概率生成模型示意图"></p>
+<p>我们假设采样点是这样得到的</p>
+<ol>
+<li>按照一定的概率分布，选取一个高斯分布</li>
+<li>按照选出的高斯分布来采样<br>我们假设已经有了 $K$ 个高斯分布， 根据隐变量 $Z$ 的取值来选择其中一个高斯分布来采样。$P\left( z \right)$ 是一种离散的概率分布<script type="math/tex; mode=display">
+P\left( Z=k \right)=p_{k}</script>显然 $\sum_{k=1}^{K}{p_{k}}=1$ ，接下来计算 $P\left( x \right)$ ，需要充分利用联合概率和边缘概率的关系<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( x \right)&=\sum_{Z}^{}{P\left( x,Z \right)}\\ 
+&=\sum_{k=1}^{K}{P\left( x,Z=k \right)}\\ 
+&=\sum_{k=1}^{K}{P\left( x|Z=k \right)P\left( Z=k \right)}\\ 
+&=\sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x | \mu_{k},\Sigma_{k} \right)} 
+\end{aligned}</script>这样，模型的定义就更明确了，我们称</li>
+</ol>
+<ul>
+<li>$X=\left\{ x_{1},x_{2},…,x_{N} \right\}$ 为观测数据，</li>
+<li>$\left( X,Z \right)=\left\{ \left( x_{1}, Z_{1} \right),\left( x_{2}, Z_{2} \right),…,\left( x_{N}, Z_{N} \right) \right\}$ 为完全数据。</li>
+</ul>
+<p>已知 $N$ 个样本，我们希望可以求出GMM中的 $K$ 个不同的高斯分布，其中称 </p>
+<ul>
+<li>$\theta=\left( p_{1},p_{2},…,p_{K},\mu_{1},\mu_{2},…,\mu_{K},\Sigma_{1},\Sigma_{2},…\Sigma_{K} \right)$ 为模型参数。</li>
+</ul>
+<p>于是这个问题就变成了参数求解的问题，由极大似然估计的方法可以得到</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\hat{\theta}_{MLE}&=\mathop{\arg\min}_{\theta} \log P\left( X \right)\\ 
+&=\mathop{\arg\min}_{\theta} \log\prod_{i=1}^{N}P\left( x_{i} \right)\\ 
+&=\mathop{\arg\min}_{\theta} \sum_{i=1}^{N}{\log P\left( x_{i} \right)}\\ 
+&=\mathop{\arg\min}_{\theta} \sum_{i=1}^{N}{\log \left[ \sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x_{i} | \mu_{k},\Sigma_{k} \right)} \right]} 
+\end{aligned}</script><p>其中，对数中包含加法，难以直接优化，需要采用EM算法。</p>
+<h1 id="EM算法求解"><a href="#EM算法求解" class="headerlink" title="EM算法求解"></a>EM算法求解</h1><blockquote>
+<p>EM算法链接</p>
+</blockquote>
+<p>首先明确联合概率、边缘概率和条件概率</p>
+<script type="math/tex; mode=display">
+P\left( x,Z \right)=P\left( Z \right)P\left( x|Z \right)=P_{Z}\cdot\mathcal N\left( x | \mu_{k},\Sigma_{k} \right)</script><script type="math/tex; mode=display">
+P\left( x \right)=\sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x | \mu_{k},\Sigma_{k} \right)}</script><script type="math/tex; mode=display">
+P\left( Z|x \right)=\frac{P\left( x,Z \right)}{P\left( x \right)}</script><p>首先根据E-step，写出Q函数</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+Q\left( \theta,\theta^{\left( t \right)} \right)&=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log P\left( X,Z|\theta \right) \mathrm{d}Z\\ 
+&=\sum_{Z}{\left[ \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\log\prod_{j=1}^{N}P\left( x_{j},Z_{j} | \theta \right) \right]}\\ 
+&=\sum_{Z}{\left[ \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\sum_{j=1}^{N}{\log P\left( x_{j},Z_{j} | \theta \right)} \right]}\\ 
+&=\sum_{Z}{\left[ \sum_{j=1}^{N}{\left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right)}  \right]}\\ 
+&=\sum_{j=1}^{N}{\sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}} 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程，首先将概率写成所有样本连乘的形式，然后将对数上的连乘写成外部的连加，接下来将连加符一步步外提，直至提到最外面。</p>
+</blockquote>
+<p>接下来，以 $j=1$ 为例，计算内部</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1},...Z_{N}}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1},...Z_{N}}{\left[P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right) \prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1}}{\left[ \left( \sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} \right)P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程，首先当前 $j=1$ ，从对 $Z$ 的连加中将 $Z_{1}$ 单独分类出来，同时连加内部的表达式中与 $Z_{1}$ 有关的也要分离出来。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\quad\sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} &=\prod_{i=2}^{N}{\sum_{Z_{i}}{P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)}}\\ 
+&=\prod_{i=2}^{N}{1}\\ 
+&=1 
+\end{aligned}</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{Z_{1}}{\left[ \left( \sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} \right)P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1}}{\left[ P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]} 
+\end{aligned}</script><p>对 $j=1$ 如此，当 $j$ 取其它值时也有类似的上述计算。所以，对任意确定的 $j$ 都有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}\\ 
+&=\sum_{Z_{j}}{\left[ P\left( Z_{j}| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]} 
+\end{aligned}</script><p>将上式代入到Q函数</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+Q\left( \theta,\theta^{\left( t \right)} \right)&=\sum_{j=1}^{N}{\sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{Z_{j}}{\left[ P\left( Z_{j}| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j}=k | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( P\left( Z_{j}=k  \right)P\left( x_{j}|Z_{j}=k , \theta \right) \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}}\\ 
+&=\sum_{k=1}^{K}{\sum_{j=1}^{N}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}}\\ 
+\end{aligned}</script><p>解释一下上面的运算过程，就是利用联合概率和条件概率的关系，将复杂表达替换为简便表达的过程</p>
+<p>然后根据M-step，对Q函数最大化，优化参数，以求 $p^{\left( t+1 \right)}=\left( p_{1}^{\left( t+1 \right)}, p_{2}^{\left( t+1 \right)},…,p_{K}^{\left( t+1 \right)}\right)$ 为例</p>
+<script type="math/tex; mode=display">
+\max \limits_{p}\ \sum_{k=1}^{K}{\sum_{j=1}^{N}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}} \qquad \mathrm{s.t.}\quad\sum_{k=1}^{K}{p_{k}}=1</script><p>略去与 p 无关的项，可以写成</p>
+<script type="math/tex; mode=display">
+ \max \limits_{p}\ \sum_{k=1}^{K}{\sum_{j=1}^{N}{ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log p_{k} }} \qquad  \mathrm{s.t.}\quad\sum_{k=1}^{K}{p_{k}}=1</script><p>写出拉格朗日函数</p>
+<script type="math/tex; mode=display">
+L\left( p,\lambda \right)=\sum_{k=1}^{K}{\sum_{j=1}^{N}{ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log p_{k} }}+\lambda \left( \sum_{k=1}^{K}{p_{k}}-1 \right)</script><p>对求偏导</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \frac{\partial L}{\partial p_{k}}=0\\ 
+&\Rightarrow\sum_{j=1}^{N}{\frac{1}{p_{k}}P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda = 0\\ 
+&\Rightarrow\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda p_{k} = 0\\ 
+&\Rightarrow \sum_{k=1}^{K}{\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\sum_{k=1}^{K}{\lambda p_{k}} = 0\\ 
+&\Rightarrow \sum_{j=1}^{N}{\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\lambda = 0\\ 
+\end{aligned}</script><p>其中</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}=1</script><p>代入后</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{j=1}^{N}{\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\lambda = 0\\ 
+&\Rightarrow \sum_{j=1}^{N}{1}+\lambda = 0\\ 
+\end{aligned}</script><p>于是得到 $\lambda = -N$ ，反代入到上面的式子</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda p_{k} = 0\\ 
+&\Rightarrow\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}-N p_{k} = 0\\
+\end{aligned}</script><p>于是得到</p>
+<script type="math/tex; mode=display">
+p_{k}^{\left( t+1 \right)}=\frac{1}{N}\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}</script><p>至于 $\mu^{\left( t+1 \right)}$ 和 $\Sigma^{\left( t+1 \right)}$ 的求解，和上面的方法相同，甚至更简单，因为这两个参数的优化是无约束的，可以直接求偏导求解</p>
+<script type="math/tex; mode=display">
+\mu_{k}^{\left( t+1 \right)}=\frac{\sum_{j=1}^{N}{x_{j} P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}{\sum_{j=1}^{N}{ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}</script><script type="math/tex; mode=display">
+\Sigma_{k}^{\left( t+1 \right)}=\frac{\sum_{j=1}^{N}{\left( x_{j}-\mu_{k}^{\left( t \right)} \right)^{2} P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}{\sum_{j=1}^{N}{ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}</script><p>其中</p>
+<script type="math/tex; mode=display">
+P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)=\frac{p_{k}^{\left( t \right)}\cdot\mathcal{N}\left( x_{j} | \mu_{k}^{\left( t \right)},\Sigma_{k}^{\left( t \right)} \right)}{\sum_{i=1}^{K}{p_i^{\left( t \right)}\cdot\mathcal N\left( x_{j} | \mu_{i}^{\left( t \right)},\Sigma_{i}^{\left( t \right)} \right)}}</script>]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>EM</tag>
+        <tag>GMM</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Adaboost算法及代码实现</title>
+    <url>/2020/07/07/Adaboost%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<h1 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h1><p>输入：训练集 $T=\left\{ \left( x_{1},y_{1} \right),\left( x_{2},y_{2} \right),…,\left( x_{N},y_{N} \right) \right\}$ ，其中 $x_{i}\in\mathbb{R}^{n},y_{i}\in\left\{ -1,+1 \right\}$ </p>
+<p>输出：最终加权组合起来的分类器</p>
+<a id="more"></a>
+<p>算法：</p>
+<ol>
+<li>初始化权重 <script type="math/tex; mode=display">
+D_{1}=\left\{ w_{1i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
+w_{1i}=\frac{1}{N}</script></li>
+<li>训练 $M$ 个基分类器<ol>
+<li>用带权重 $D_{m}$ 的训练集组训练出一个基分类器 <script type="math/tex; mode=display">
+G_{m}\left( x \right)</script></li>
+<li>计算这个基分类器的错误率（带权重） <script type="math/tex; mode=display">
+e_{m}=\sum_{i=1}^{N}{w_{mi}I\left( G_{m}\left( x_{i} \right)\ne y_{i} \right)}</script></li>
+<li>计算分类器权重： <script type="math/tex; mode=display">
+\alpha_{m} =\frac{1}{2}\log\frac{1-e_{m}}{e_{m}}</script></li>
+<li>计算规范化因子 <script type="math/tex; mode=display">
+Z_{m}=\sum_{i=1}^{N}{w_{mi}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)}</script></li>
+<li>更新权重： <script type="math/tex; mode=display">
+D_{m+1}=\left\{ w_{m+1,i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
+w_{m+1,i}=\frac{w_{mi}}{Z_{m}}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)</script></li>
+</ol>
+</li>
+<li>组合得到最终分类器<script type="math/tex; mode=display">
+G\left( x \right)={\rm sign}\left( \sum_{m=1}^{M}{\alpha_{m}G_{m}\left( x \right)} \right)</script></li>
+</ol>
+<h1 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h1><p>参考代码：<a href="https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb">https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb</a></p>
+<p>AdaBoost构建框架如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AdaBoost</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        初始化模型参数</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G_train</span>(<span class="params">self, features, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        训练单个基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G</span>(<span class="params">self, x, v, flag</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        应用单个的基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算基分类器权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算规范化因子</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        更新权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        adaboost算法训练过程</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        单样本预测</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+<p>接下来详细解释几个重要函数。</p>
+<p>首先是初始化函数，涉及到贯穿整个算法的一些参数，包括</p>
+<ul>
+<li>基分类器数量</li>
+<li>数据集（包括特征值、类别、样本数量、特征数量）</li>
+<li>数据权重集合</li>
+<li>基分类器参数集合</li>
+<li>基分类器权重集合</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    初始化模型参数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    self.clf_num = num</span><br><span class="line">    self.X, self.Y = datasets, labels</span><br><span class="line">    <span class="comment"># M个数据，也就是N个特征</span></span><br><span class="line">    self.M, self.N = datasets.shape</span><br><span class="line">    <span class="comment"># 分类器参数集合</span></span><br><span class="line">    self.clf_args = []</span><br><span class="line">    <span class="comment"># 初始化数据权重和分类器权重</span></span><br><span class="line">    self.w = [<span class="number">1.0</span> / self.M] * self.M</span><br><span class="line">    self.alpha = []</span><br></pre></td></tr></table></figure>
+<p>接下来是计算分类器权重、规范化因子和数据权重更新的函数，可以按照前文中的公式计算</p>
+<ul>
+<li>计算分类器权重时需要的参数：当前分类器的错误率</li>
+<li>计算规范化因子时需要的参数：当前分类器权重、当前分类器的分类结果</li>
+<li>计算新一轮权重时需要的参数：当前分类器权重、当前分类器的分类结果、规范化因子</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算分类器权重，为了防止err为0，也可以在分母加一个极小值</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.5</span> * np.log((<span class="number">1</span> - err) / err)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算规范化因子</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    numerators = [self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M)]</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sum</span>(numerators)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    更新权重</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M):</span><br><span class="line">        self.weights[i] = self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) / Z </span><br></pre></td></tr></table></figure>
+<p>接下来是样本预测函数，也就是组合得到的最终的分类器，加权求和后使用符号函数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    单样本预测</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    res = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        j, v, flag = self.clf_args[i]</span><br><span class="line">        result += self.alpha * self.G(feature[j], v, flag)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> <span class="keyword">if</span> res &gt; <span class="number">0</span> <span class="keyword">else</span> -<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>最重要就是AdaBoost算法训练过程，其中基分类器用的是单层决策树，循环嵌套结构如下</p>
+<ul>
+<li>迭代训练每个基分类器</li>
+<li>训练一个基分类器时，由于是单层决策树，要尝试使用每一个特征来分类，选一个最好的</li>
+<li>用一个特征分类时，要尝试每个分类边界值，找到一个最好的（这一步体现在基分类器训练中）</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    adaboost算法训练过程</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 迭代训练每个基分类器</span></span><br><span class="line">    <span class="comment"># 每个基分类器只用N个特征中对一个来分类，从中挑一个最好的</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树，就不需要尝试每个特征，也不需要记录基分类器参数，例如</span></span><br><span class="line">        <span class="comment"># clf = DecisionTreeClassifier(max_depth=1)</span></span><br><span class="line">        <span class="comment"># clf.fit(self.X, self.Y)</span></span><br><span class="line">        <span class="comment"># best_res = clf.predict(self.X)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 初始化最低错误率、最佳分类边界值、最佳分类结果、分为正类的判断方向（大于或者小于）</span></span><br><span class="line">        min_err, boundary, best_res, flag, feature_num = <span class="number">1</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 尝试每个特征进行分类器训练</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.N):</span><br><span class="line">            features = self.X[:, j]</span><br><span class="line">            <span class="comment"># 用带权重的数据训练一个基分类器</span></span><br><span class="line">            v, curr_flag, err, res = self.G_train(features, self.Y)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 如果错误率比已有记录更低，就更新记录</span></span><br><span class="line">            <span class="keyword">if</span> err &lt; min_err:</span><br><span class="line">                min_err = err</span><br><span class="line">                feature_num = j</span><br><span class="line">                boundary = v </span><br><span class="line">                flag = curry_flag</span><br><span class="line">                best_res = res</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 如果错误率为0，就不需要再尝试其他特征了</span></span><br><span class="line">            <span class="keyword">if</span> min_err == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树模型，就记录下模型即可，例如</span></span><br><span class="line">        <span class="comment"># self.clfs.append(clf)</span></span><br><span class="line">        <span class="comment"># 记录下当前分类器参数（参数包括分类特征、分类边界值，分类结果）</span></span><br><span class="line">        self.clf_args.append((feature_num, boundary, final_flag))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据当前分类器的错误率计算分类器权重并记录</span></span><br><span class="line">        a = self.cal_alpha(min_err)</span><br><span class="line">        self.alpha.append(a)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据分类器权重和分类结果，计算归一化因子并更新权重</span></span><br><span class="line">        Z = self.Z(a, best_res)</span><br><span class="line">        self.W(a, best_res, Z)</span><br></pre></td></tr></table></figure>
+<p>单层决策树分类器不是AdaBoost算法的重点，代码也不再详细说明了，可以使用sklearn库中的决策树模型，将参数max_depth设置为1，这样也是一个基分类器。</p>
+]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>Boost</tag>
+        <tag>树模型</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>隐马尔可夫模型（HMM）数学推导思路</title>
+    <url>/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/</url>
+    <content><![CDATA[<h1 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h1><p>本文主要从详细的数学推导角度，讲解HMM模型，主要内容包括HMM模型的</p>
+<ul>
+<li>基本构成元素（状态序列与状态值、观测序列与观测值）</li>
+<li>三个参数（初始概率分布、转移矩阵、发射矩阵）</li>
+<li>两个假设（齐次马尔可夫假设、观测独立假设）</li>
+<li>三个问题（概率计算、参数学习、状态预测）</li>
+<li>四个算法（Forward、Backward、Baum-Welch、Viterbi）</li>
+</ul>
+<a id="more"></a>
+<h1 id="模型简介"><a href="#模型简介" class="headerlink" title="模型简介"></a>模型简介</h1><!--[HMM模型示意图](HMM.png)-->
+<h2 id="状态序列和状态值"><a href="#状态序列和状态值" class="headerlink" title="状态序列和状态值"></a>状态序列和状态值</h2><p>上图中 $I$ 表示一个状态序列，长度为 $T$ ， $i_{t}$ 表示状态序列中的第 $t$ 个状态值。状态值的取值集合为 $Q=\left\{ q_{1},q_{2},…,q_{N} \right\}$ ，也就是每个状态有 $N$ 种不同的取值，任意 $i_{t}\in Q$ 。词性标注问题中，词性就是状态值，一句话分词后的序列被标注后，得到的词性序列就是状态序列。</p>
+<h2 id="观测序列和观测值"><a href="#观测序列和观测值" class="headerlink" title="观测序列和观测值"></a>观测序列和观测值</h2><p>上图中 $O$ 表示一个观测序列，长度也为 $T$ ， $o_{t}$ 表示序列中的第 $t$ 个观测值。观测值的取值集合为 $V=\left\{ v_{1},v_{2},…,v_{M} \right\}$ ，也就是观测变量有 $M$ 种不同的取值，任意 $o_{t}\in V$ 。词性标注问题中，连续的分词结果就是观测序列，其中每个词就是一个观测值。</p>
+<h2 id="模型参数"><a href="#模型参数" class="headerlink" title="模型参数"></a>模型参数</h2><p>HMM模型参数为 $\lambda = \left( \pi,A,B \right)$ ，其中包括：</p>
+<ol>
+<li>初始概率分布 $\pi=\left( \pi_{1},\pi_{2},…,\pi_{N} \right)$ ，其中 $\pi_{k}=P\left( i_{1}=q_{k} \right)$ 。初状态取值为 $q_{k}$ 的概率，显然满足 $\sum_{k=1}^{N}{\pi_{k}}=1$ </li>
+<li>转移矩阵 $A=\left[ a_{jk} \right]$ ，其中 $j=1,…,N$ ， $k=1,…,N$ ， $a_{jk}=P\left( i_{t+1}=q_{k}|i_{t}=q_{j} \right)$ 。某一个状态取值为 $q_{j}$ 的条件下，下一个状态取值为 $q_{k}$ 的概率，也就是上图中第一排节点之间的横向箭头的含义，显然满足 $\sum_{k=1}^{N}{a_{jk}}=1$ </li>
+<li>发射矩阵 $B=\left[ b_{j}\left( k \right) \right]$ ，其中 $j=1,…,M$ ， $k=1,…,N$ ，  $b_{j}\left( k \right)=P\left( o_{t}=v_{k}|i_{t}=q_{j} \right)$ 。某一个状态取值为 $q_{j}$ 的条件下，对应的观测值为 $v_{k}$ 的概率，也就是上图中第一排节点和第二排节点之间的纵向箭头的含义，显然满足 $\sum_{k=1}^{N}{b_{j}\left( k \right)}=1$ </li>
+</ol>
+<p><strong>自然语言处理中，分词问题（给每个字标注“词首”、“词中”、“词尾”）、词性标注问题（给每个词标注“名词”、“动词”、“形容词”等）都可以套用HMM模型，后续的算法推导，可以将应用场景代入，便于理解。</strong></p>
+<h1 id="模型假设"><a href="#模型假设" class="headerlink" title="模型假设"></a>模型假设</h1><p>两个重要假设是简化后续数学推导的关键，会多次重复使用</p>
+<h2 id="齐次马尔可夫假设"><a href="#齐次马尔可夫假设" class="headerlink" title="齐次马尔可夫假设"></a>齐次马尔可夫假设</h2><script type="math/tex; mode=display">
+P\left( i_{t+1}|i_{1},i_{2},...,i_{t},o_{1},o_{2},...,o_{t} \right)=P\left( i_{t+1}|i_{t} \right)</script><p>其含义为：下一状态的取值只与当前状态值有关，与更早的状态值或观察值无关。从HMM的模型示意图中可以看出来，第一排的每一个状态节点，只有前一个状态节点指向它，没有其他任何节点再指向它。</p>
+<h2 id="观测独立假设"><a href="#观测独立假设" class="headerlink" title="观测独立假设"></a>观测独立假设</h2><script type="math/tex; mode=display">
+P\left( o_{t}|i_{1},i_{2},...,i_{t},o_{1},o_{2},...,o_{t} \right)=P\left( o_{t}|i_{t} \right)</script><p>其含义为：当前的观测值只与当前状态值有关，与更早的状态值或者观测值无关。从HMM的模型示意图中可以看出来，第二排的每一个观测节点，只有上方与之对应的状态节点指向它，没有其他任何节点再指向它。</p>
+<p>另外，为了简化运算，后续还会多次用到联合概率和边缘概率的关系、联合概率和条件概率的关系。</p>
+<h1 id="问题一-概率计算"><a href="#问题一-概率计算" class="headerlink" title="问题一  概率计算"></a>问题一  概率计算</h1><p>这个问题就是已知一个确定的HMM模型，求一个观测序列 $O$ 出现的概率，也就是 $P\left( O|\lambda \right)$ </p>
+<h2 id="直接计算"><a href="#直接计算" class="headerlink" title="直接计算"></a>直接计算</h2><script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I \right) &= \sum_{I}{P\left( O, I|\lambda \right)}\\ 
+&=\sum_{I}{P\left( O |I,\lambda \right)P\left( I|\lambda \right)}\\ 
+\end{aligned}</script><p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( I|\lambda \right)&=P\left(i_{1},i_{2},...,i_{T} |\lambda \right)\\ 
+&=P\left(i_{T}|i_{1},i_{2},...,i_{T-1}, \lambda \right)P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=P\left(i_{T}|i_{T-1}, \lambda \right)P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right) 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用条件概率和联合概率的关系、齐次马尔可夫假设进行运算。</p>
+</blockquote>
+<p>同理</p>
+<script type="math/tex; mode=display">
+P\left(i_{1},i_{2},...,i_{T-1} |\lambda \right)=a_{i_{T-2}i_{T-1}}P\left(i_{1},i_{2},...,i_{T-2}| \lambda \right)</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( I|\lambda \right)&=a_{i_{T-1}i_{T}}P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}\cdot a_{i_{T-2}i_{T-1}}\cdot a_{i_{T-3}i_{T-2}}...a_{i_{1}i_{2}}\cdot P\left( i_{1}|\lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}\cdot a_{i_{T-2}i_{T-1}}\cdot a_{i_{T-3}i_{T-2}}...a_{i_{1}i_{2}}\cdot  \pi_{i_{1}}\\ 
+&=\pi_{i_{1}}\prod_{t=2}^{T}{a_{i_{t-1}i_{t}}} 
+\end{aligned}</script><p>另外</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I,\lambda \right)&=P\left(o_{1},o_{2},...,o_{T} |i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=P\left(o_{1}|o_{2},...,o_{T},i_{1},i_{2},...,i_{T},\lambda \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=P\left(o_{1}|i_{1},\lambda \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{1}}\left( o_{1} \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right) 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用条件概率和联合概率的关系、观测独立假设进行运算。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)&=P\left( o_{2}|i_{2} \right)P\left(o_{3},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{2}}\left( o_{2}\right)P\left(o_{3},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right) 
+\end{aligned}</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I,\lambda \right)&=b_{i_{1}}\left( o_{1} \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{1}}\left( o_{1} \right)\cdot b_{i_{2}}\left( o_{2} \right)...b_{i_{T-1}}\left( o_{T-1} \right)\cdot b_{i_{T}}\left( o_{T} \right)\\ 
+&=\prod_{t=1}^{T}{b_{i_{t}}\left( o_{t} \right)} 
+\end{aligned}</script><p>综上</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I \right) &=\sum_{I}{P\left( O |I,\lambda \right)P\left( I|\lambda \right)}\\ 
+&=\sum_{I}{\left[ \pi_{i_{1}}\left( \prod_{t=2}^{T}{a_{i_{t-1}i_{t}}} \right)\left( \prod_{t=1}^{T}{b_{i_{t}}\left( o_{t} \right)} \right) \right]} 
+\end{aligned}</script><p>这样的计算复杂度太高，不适合计算机，我们对以上计算进行改进，设计两个基于递推关系的动态规划方法，分别是前向算法和后向算法</p>
+<h2 id="前向算法"><a href="#前向算法" class="headerlink" title="前向算法"></a>前向算法</h2><p>我们定义</p>
+<script type="math/tex; mode=display">
+\alpha_{t}\left( k \right) = P\left( o_{1},o_{2},...,o_{t},i_{t}=q_{k} | \lambda \right)</script><p>所以就有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|\lambda \right) &= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T},i_{T}=q_{k} | \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{\alpha_{T}\left( k \right)} 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用边缘概率和联合概率的关系进行运算。</p>
+</blockquote>
+<p>推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\alpha_{t+1}\left( k \right) &=P\left( o_{1},...,o_{t},o_{t+1},i_{t+1}=q_{k} | \lambda \right)\\ 
+&=\sum_{j=1}^{N}{P\left( o_{1},...,o_{t},o_{t+1},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j}, \lambda \right)P\left(o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(i_{t+1}=q_{k} |i_{t}=q_{j}, o_{1},...,o_{t},\lambda \right)P\left(i_{t}=q_{j}, o_{1},...,o_{t}|\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(i_{t+1}=q_{k} |i_{t}=q_{j},\lambda \right)P\left(i_{t}=q_{j}, o_{1},...,o_{t}|\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{b_{k}\left( o_{t+1} \right)\cdot a_{jk}\cdot \alpha_{t}\left( j \right)}\\ 
+&=b_{k}\left( o_{t+1} \right)\cdot\sum_{j=1}^{N}{a_{jk}\cdot \alpha_{t}\left( j \right)}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用两个假设进行运算化简。</p>
+</blockquote>
+<p>得到递推关系后，就可以写出前向算法流程</p>
+<p>输入：模型参数 $\lambda$ （初始概率分布 $\pi$ 、转移矩阵 $A$  、发射矩阵 $B$ ），一个观测序列 $O$ </p>
+<p>输出： $P\left( O|\lambda \right)$</p>
+<p>算法过程：</p>
+<ol>
+<li>构造一个 $T\times N$ 的动态规划矩阵，用于存储所有 $\alpha_{t}\left( k \right), t=1,…,T, k=1,…,N$ ，并初始化 <script type="math/tex; mode=display">
+\alpha_{1}\left( k \right)=\pi_{k}\cdot b_{k}\left( o_{1} \right)</script></li>
+<li>递推求解，依次对所有 $t=1,…,T-1$ ，遍历每一个 $k=1,…,N$ ，递推计算 <script type="math/tex; mode=display">\alpha_{t+1}\left( k \right)=b_{k}\left( o_{t+1} \right)\cdot\sum_{j=1}^{N}{a_{jk}\cdot \alpha_{t}\left( j \right)}</script></li>
+<li>最后计算 <script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{k=1}^{N}{\alpha_{T}\left( k \right)}</script></li>
+</ol>
+<p>以上就是前向算法，可以看出，空间复杂度为 $O\left( T\times N \right)$ ，时间复杂度为 $O\left( T\times N\times N \right)$ </p>
+<h2 id="后向算法"><a href="#后向算法" class="headerlink" title="后向算法"></a>后向算法</h2><p>和前向算法类似，定义</p>
+<script type="math/tex; mode=display">
+\beta_{t}\left( k \right)=P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t}=q_{k},\lambda \right)</script><p>所以有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|\lambda \right)&= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T},i_{1}=q_{k} | \lambda \right)}\\ 
+&= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{P\left( o_{1}|o_{2},...,o_{T},i_{1}=q_{k}, \lambda \right)P\left(o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{P\left( o_{1}|i_{1}=q_{k}, \lambda \right)P\left(o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{b_{k}\left( o_{1} \right)\beta_{1}\left( k \right) \pi_{k}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用观测独立假设进行运算化简。</p>
+</blockquote>
+<p>推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\beta_{t}\left( k \right)&=P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t}=q_{k},\lambda \right)\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1},o_{t+2},...,o_{T},i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t+1}=q_{j},i_{t}=q_{k},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|o_{t+2},...,o_{T},i_{t+1}=q_{j},\lambda \right)P\left( o_{t+2},...,o_{T}|i_{t+1}=q_{j},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|i_{t+1}=q_{j},\lambda \right)P\left( o_{t+2},...,o_{T}|i_{t+1}=q_{j},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{b_{j}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( j \right)\cdot a_{kj}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用观测独立假设进行运算化简。</p>
+</blockquote>
+<p>得到递推关系后，就可以写出后向算法流程</p>
+<p>输入：模型参数 $\lambda$ （初始概率分布 $\pi$ 、转移矩阵 $A$  、发射矩阵 $B$ ），一个观测序列 $O$ </p>
+<p>输出： $P\left( O|\lambda \right)$ </p>
+<p>算法过程：</p>
+<ol>
+<li>构造一个 $T\times N$ 的动态规划矩阵，用于存储所有 $\beta_{t}\left( k \right), t=1,…,T, k=1,…,N$ ，并初始化 <script type="math/tex; mode=display">
+\alpha_{T}\left( k \right)=1</script></li>
+<li>递推求解，依次对所有 $t=T-1,…,1$ ，遍历每一个 $k=1,…,N$ ，递推计算 <script type="math/tex; mode=display">
+\beta_{t}\left( k \right)=\sum_{j=1}^{N}{a_{kj}\cdot b_{j}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( j \right)}</script></li>
+<li>最后计算 <script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{k=1}^{N}{\pi_{k}\cdot b_{k}\left( o_{1} \right)\cdot\beta_{1}\left( k \right)}</script></li>
+</ol>
+<p>以上就是后向算法，可以看出，空间复杂度为 $O\left( T\times N \right)$ ，时间复杂度为 $O\left( T\times N\times N \right)$</p>
+<h2 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h2><p>为了帮助理解，给出下图</p>
+<!-- [前向算法、后向算法图示](ForwardBackward.png)-->
+<p>如图，选择任意一个时刻 $t=1,…,T-1$ ，假设 $i_{t}=q_{j}$ ， $i_{t+1}=q_{k}$ ，其中 $j,k=1,…,N$ 。左侧黄色直角框表示的就是 $\alpha_{t}\left( j \right)$ ，右侧黄色钝角框表示的就是 $\beta_{t+1}\left( k \right)$ ，根据这张图也可以理解如下表达式</p>
+<script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{j=1}^{N}{\sum_{k=1}^{N}{\left[ \alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right) \right]}}</script><p>这张图也能帮助理解后面 $\gamma_{t}\left( k \right)$ 和 $\xi_{t}\left( j,k \right)$ 的表达含义。</p>
+<h1 id="问题二-模型学习"><a href="#问题二-模型学习" class="headerlink" title="问题二  模型学习"></a>问题二  模型学习</h1><p>这个问题就是给定样本数据，求模型的参数。如果样本中只包含观测序列，那么这就是一个无监督学习过程；如果样本中包含观测序列及其对应的状态序列，那么这就是一个监督学习过程。</p>
+<h2 id="监督学习"><a href="#监督学习" class="headerlink" title="监督学习"></a>监督学习</h2><p>当我们拥有了观测序列及对应的状态序列，我们就可以根据统计信息，以频率近似概率，直接快速计算参数。所以需要非常清楚三个参数的具体意义。</p>
+<p>首先，初始概率分布。假设 $M_{k}$ 表示样本中以 $q_{k}$ 为起始点出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{\pi}_{k}=\frac{M_{k}}{\sum_{k=1}^{N}{M_{k}}}</script><p>其次，转移矩阵。假设 $M_{jk}$ 表示样本中从 $q_{j}$ 状态直接转移到 $q_{k}$ 状态出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{a}_{jk}=\frac{M_{jk}}{\sum_{k=1}^{N}{M_{jk}}}</script><p>最后，发射矩阵。假设 $M_{jk}$ 表示样本中由 $q_{j}$ 状态直接得到观测值 $v_{k}$ 出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{b}_{j}\left( k \right)=\frac{M_{jk}}{\sum_{k=1}^{N}{M_{jk}}}</script><h2 id="无监督学习——-Baum-Welch算法（EM）"><a href="#无监督学习——-Baum-Welch算法（EM）" class="headerlink" title="无监督学习—— Baum-Welch算法（EM）"></a>无监督学习—— Baum-Welch算法（EM）</h2><p>样本数据中不包含状态序列时，就需要使用优化算法。Baum-Welch算法实际上就是EM算法。接下来的推导直接套用EM算法的结论，复习见下方链接。</p>
+<blockquote>
+<p>EM算法链接</p>
+</blockquote>
+<p>直接套用，注意上角标出现的 $\left( t \right)$ 表示第 $t$ 轮迭代优化后的参数， $\lambda^{\left( t \right)}=\left( \pi^{\left( t \right)},A^{\left( t \right)},B^{\left( t \right)} \right)$ ，小角标出现的 $t$ 表示序列中的第 $t$ 时刻</p>
+<script type="math/tex; mode=display">
+\begin{aligned}  \lambda^{\left( t+1 \right)}&=\mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I|O,\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &= \mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)P\left( O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &= \mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。第二行到第三行， P\left( O|\lambda^{\left( t \right)} \right) 是常数，可以舍去。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+P\left( O,I|\lambda \right)=\pi_{i_{1}}\cdot \prod_{t=2}^{T}a_{i_{t-1}i_{t}} \cdot  \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)</script><p>代入Q函数进行运算</p>
+<script type="math/tex; mode=display">
+\begin{aligned} Q\left( \lambda, \lambda^{\left( t \right)} \right)&=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{\left( \pi_{i_{1}}\cdot \prod_{t=2}^{T}a_{i_{t-1}i_{t}} \cdot  \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)  \right)}}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\left( \log\pi_{i_{1}}+ \log\prod_{t=2}^{T}a_{i_{t-1}i_{t}} + \log \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)  \right)}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\left( \log\pi_{i_{1}}+ \sum_{t=2}^{T}{\log a_{i_{t-1}i_{t}}} + \sum_{t=1}^{T}{\log b_{i_{t}}\left( o_{t} \right)}  \right)}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}+\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\sum_{t=2}^{T}{\log a_{i_{t-1}i_{t}}}}+\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\sum_{t=1}^{T}{\log b_{i_{t}}\left( o_{t} \right)} }\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。对数中真数连乘改写为对数连加，将三种参数分离。</p>
+</blockquote>
+<p>以求参数 $\pi$ 为例</p>
+<script type="math/tex; mode=display">
+\begin{aligned} \pi^{\left( t+1 \right)}&= \mathop{\arg\max}_{\pi}\ Q\left( \lambda, \lambda^{\left( t \right)} \right)\\ &=\mathop{\arg\max}_{\pi}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{...\sum_{i_{T}}{P\left( i_{1},...,i_{T},O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{\log\pi_{i_{1}}\sum_{i_{2}...i_{T}}{P\left( i_{1},i_{2},...,i_{T},O|\lambda^{\left( t \right)} \right)}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{P\left( i_{1},O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{k=1}^{N}{P\left( i_{1}=q_{k},O|\lambda^{\left( t \right)} \right)\log\pi_{k}}\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。将连加部分展开，舍去与参数优化无关的项。</p>
+</blockquote>
+<p>并且有约束条件</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{N}{\pi_{k}}=1</script><p>写出拉格朗日函数</p>
+<script type="math/tex; mode=display">
+L\left( \pi, \eta \right)=\sum_{k=1}^{N}{P\left( i_{1}=q_{k},O|\lambda^{\left( t \right)} \right)\log\pi_{k}}+\eta\left( \sum_{k=1}^{N}{\pi_{k}}-1 \right)</script><p>求偏导数，令其为0</p>
+<script type="math/tex; mode=display">
+\begin{aligned} &\quad \frac{\partial L}{\partial \pi_{k}}=\frac{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}{\pi_{k}}+\eta=0\\ &\Rightarrow P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)+\eta\pi_{k}=0\\ &\Rightarrow \sum_{k=1}^{N}{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}+\sum_{k=1}^{N}{\eta\pi_{k}}=0\\ &\Rightarrow P\left( O|\lambda^{\left( t \right)} \right)+\eta=0\\ &\Rightarrow \eta = -P\left( O|\lambda^{\left( t \right)} \right) \end{aligned}</script><p>将 $\eta$ 反代回到第二行，得到</p>
+<script type="math/tex; mode=display">
+\pi_{k}=\frac{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}{P\left( O|\lambda^{\left( t \right)} \right)}</script><p>同样的方法求解转移矩阵和发射矩阵，得到</p>
+<script type="math/tex; mode=display">
+a_{jk}=\frac{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},i_{t+1}=q_{k}|\lambda^{\left( t \right)}  \right)}}{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}</script><script type="math/tex; mode=display">
+b_{j}\left( k \right)=\frac{\sum_{t=1}^{T-1}{P\left( O,o_{t}=v_{k},i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}</script><p>显然，这些参数的计算要依赖于前面的概率计算问题。为例和前面的前向算法、后向算法关联，方便代码编写，引入下面一些表达</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\gamma_{t}\left( k \right)
+&=P\left( i_{t}=q_{k}|O, \lambda \right)\\ 
+&=\frac{P\left( i_{t}=q_{k},O|\lambda \right)}{P\left( O| \lambda \right)}\\ 
+&=\frac{\alpha_{t}\left( k \right)\beta_{t}\left( k \right)}{\sum_{j=1}^{N}{\alpha_{t}\left( j \right)\beta_{t}\left( j \right)}}\\ 
+\end{aligned}</script><script type="math/tex; mode=display">
+\begin{aligned}  
+\xi_{t}\left( j,k \right)
+&=P\left( i_{t}=q_{j},i_{t+1}=q_{k}|O,\lambda \right)\\ 
+&=\frac{P\left( i_{t}=q_{j},i_{t+1}=q_{k},O|\lambda \right)}{P\left( O|\lambda \right)}\\ 
+&=\frac{\alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right)}{\sum_{j=1}^{N}{\sum_{k=1}^{N}{\left[ \alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right) \right]}}}  
+\end{aligned}</script><p>于是有</p>
+<script type="math/tex; mode=display">
+\pi_{k}=\gamma_{1}\left( k \right)</script><script type="math/tex; mode=display">
+a_{jk}=\frac{\sum_{t=1}^{T-1}{\xi_{t}\left( j,k \right)}}{\sum_{t=1}^{T-1}{\gamma_{t}\left( j \right)}}</script><script type="math/tex; mode=display">
+b_{j}\left( k \right)=\frac{\sum_{t=1,o_{t}=v_{k}}^{T}{\gamma_{t}\left( j \right)}}{\sum_{t=1}^{T}{\gamma_{t}\left( j \right)}}</script><p>Baum-Welch算法流程如下</p>
+<p>输入：观测序列 $O=\left( o_{1},o_{2},…,o_{T} \right)$ </p>
+<p>输出：模型参数 $\lambda=\left( \pi,A,B \right)$ </p>
+<p>算法流程：</p>
+<ol>
+<li>$n=0$ ，初始化参数 $\pi_{k}^{\left( 0 \right)}$ ， $a_{jk}^{\left( 0 \right)}$ ， $b_{j}^{\left( 0 \right)}\left( k \right)$ ，组成 $\lambda^{\left( 0 \right)}=\left( \pi^{\left( 0 \right)},A^{\left( 0 \right)},B^{\left( 0 \right)} \right)$ ，其中 $k=1,…,N$ </li>
+<li>迭代优化， $n=1,2,…$ ， <script type="math/tex; mode=display">
+\pi_{k}^{\left( n+1 \right)}=\gamma_{1}\left( k \right)</script><script type="math/tex; mode=display">
+a_{jk}^{\left( n+1 \right)}=\frac{\sum_{t=1}^{T-1}{\xi_{t}\left( j,k \right)}}{\sum_{t=1}^{T-1}{\gamma_{t}\left( j \right)}}</script><script type="math/tex; mode=display">
+b_{j}^{\left( n+1 \right)}\left( k \right)=\frac{\sum_{t=1,o_{t}=v_{k}}^{T}{\gamma_{t}\left( j \right)}}{\sum_{t=1}^{T}{\gamma_{t}\left( j \right)}}</script></li>
+<li>直到达到最大迭代轮数或者已经达到最优值，结束</li>
+</ol>
+<h1 id="问题三-预测"><a href="#问题三-预测" class="headerlink" title="问题三  预测"></a>问题三  预测</h1><p>这个问题就是已知一个确定的HMM模型，给出一个观测序列 $O$ ，求出最有可能的状态序列 $I$</p>
+<h2 id="Viterbi算法"><a href="#Viterbi算法" class="headerlink" title="Viterbi算法"></a>Viterbi算法</h2><p>依旧是动态规划思想，先求出最大概率，然后回溯路径上每个节点，得到最有可能的状态序列</p>
+<!--[Viterbi算法图示](viterbi.png)-->
+<p>如上图，每一个状态的取值都可以是 $q_{1}$ 到 $q_{N}$ 中的一个。先正向计算概率，每次计算完概率后，要保存走到当前节点的概率值，以便于继续向后计算。</p>
+<p>例如，计算 $i_{2}$ 到 $i_{3}$ 时，需要遍历 $i_{3}$ 下面的 $q_{1}$ 至 $q_{N}$ 。计算 $q_{k}$ 时，需要找到从 $i_{2}$ 的哪个取值出发，最有可能到达 $i_{3}$ 下的 $q_{k}$ 。比如上图，遍历到 $i_{3}$ 下的 $q_{5}$ ，假如经过计算，到达 $\left( i_{2},q_{2} \right)$ 节点的概率和 $q_{2}$ 到 $q_{5}$ 的转移概率相乘后的结果最大，这个结果就是到达 $\left( i_{3},q_{5} \right)$ 的概率。要到达 $i_{3}$ 的 $q_{5}$ ，就要从 $i_{2}$ 的 $q_{2}$ 出发，也就是说 $\left( i_{3},q_{5} \right)$ 的前趋节点是 $\left( i_{2},q_{2} \right)$ ，记录下前趋节点。</p>
+<p>仿照上面的计算思路，一步步向后推进。当到达终点 $i_{T}$ 后，从中找到那个到达概率最大的点，按照记录下的前趋节点，一步步回溯，找到来时的路。</p>
+<p>我们定义</p>
+<script type="math/tex; mode=display">
+\delta_{t}\left( k \right)=\mathop{\max}_{i_{1},...,i_{t-1}}\ P\left( o_{1},...,o_{t},i_{1},...,i_{t-1},i_{t}=q_{k}|\lambda \right)</script><p>其中， $k=1,…,N$ ，推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\delta_{t+1}\left( k \right)&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{1},...,o_{t+1},i_{1},...,i_{t},i_{t+1}=q_{k}|\lambda \right)\\ 
+&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{t+1}|o_{1},...,o_{t+1},i_{1},...,i_{t},i_{t+1}=q_{k},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t},i_{t+1}=q_{k}|\lambda \right)\\ 
+&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{t+1}|i_{t+1}=q_{k},\lambda \right)P\left( i_{t+1}=q_{k}|o_{1},...,o_{t},i_{1},...,i_{t},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t}|\lambda \right)\\ 
+&=\mathop{\max}_{1\leq j\leq N}\ P\left( o_{t+1}|i_{t+1}=q_{k},\lambda \right)P\left( i_{t+1}=q_{k}|i_{t}=q_{j},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t}=q_{j}|\lambda \right)\\ 
+&=\mathop{\max}_{1\leq j\leq N}\ b_{k}\left( o_{t+1} \right)\cdot a_{jk}\cdot \delta_{t}\left( j \right)\\ 
+&=b_{k}\left( o_{t+1} \right) \cdot\mathop{\max}_{1\leq j\leq N}\ a_{jk} \cdot\delta_{t}\left( j \right)\\ 
+\end{aligned}</script><p>解释一下上面的运算。先利用条件概率和联合概率的关系进行提取，再利用两个假设进行运算化简。<br>其中， $t=1,…,T-1$ ，为了帮助理解，给出如下示意图</p>
+<!--[Viterbi算法递推关系示意图](viterbi递推.png)-->
+<p>如上图，黄色框代表了 $t$ 时刻的计算结果，根据箭头指示的计算方向，递推后添加了粉色框，组合起来代表 $t+1$ 时刻的计算结果。</p>
+<p>我们定义</p>
+<script type="math/tex; mode=display">
+\psi_{t}\left( k \right)=\mathop{\arg\max}_{1\leq j \leq N}\ a_{jk}\cdot\delta_{t-1}\left( j \right)</script><p>其含义为：当 $t$ 时刻状态为 $q_{k}$ 时，使 $b_{k}\left( o_{t+1} \right) \cdot a_{jk} \cdot\delta_{t}\left( j \right)$ 取最大值的 $j$ 的取值（也就是当 $t$ 时刻状态为 $q_{k}$ 时， $t-1$ 时刻的状态），如下图（实线代表最大概率值）。</p>
+<!-- [前趋节点记录](viterbi回溯.png) -->
+<p>所以，Viterbi算法流程如下</p>
+<p>输入：模型参数 $\lambda=\left( \pi,A,B \right)$ ，观测序列 $O=\left( o_{1},o_{2},…,o_{T} \right)$ </p>
+<p>输出：观测序列 $I=\left( i_{1},i_{2},…,i_{T} \right)$  </p>
+<p>算法流程：</p>
+<ol>
+<li>$t=1$ ，对 $k=1,…,N$ 遍历计算， <script type="math/tex; mode=display">
+\delta_{1}\left( k \right)=\pi_{k}\cdot b_{k}\left( o_{1} \right)</script><script type="math/tex; mode=display">
+\psi_{1}\left( k \right)=0</script></li>
+<li>递推计算 $t=2,…,T$ 。在每一个 $t$ 中，对 $k=1,…,N$ 遍历计算， <script type="math/tex; mode=display">
+\delta_{t}\left( k \right)=b_{k}\left( o_{t} \right) \cdot\mathop{\max}_{1\leq j\leq N}\ a_{jk} \cdot\delta_{t-1}\left( j \right)</script><script type="math/tex; mode=display">
+\psi_{t}\left( k \right)=\mathop{\arg\max}_{1\leq j \leq N}\ a_{jk}\cdot\delta_{t-1}\left( j \right)</script></li>
+<li>$t=T$ ，递推结束。寻找最大值， <script type="math/tex; mode=display">
+P^{*}=\mathop{\max}_{1\leq j\leq N}\ \delta_{T}\left( j \right)</script><script type="math/tex; mode=display">
+i_{T}^{*}=\mathop{\arg\max}_{1\leq j \leq N}\ \delta_{T}\left( j \right)</script></li>
+<li>回溯 $t=T-1,…,1$ ， <script type="math/tex; mode=display">
+i_{t}^{*}=\psi_{t+1}\left( i_{t+1}^{*} \right)</script></li>
+<li>最后得到 <script type="math/tex; mode=display">
+I=\left( i_{1}^{*},i_{2}^{*},...,i_{T}^{*} \right)</script></li>
+</ol>
+<h1 id="推荐参考"><a href="#推荐参考" class="headerlink" title="推荐参考"></a>推荐参考</h1><ul>
+<li>《统计学习方法（第二版）》</li>
+<li><a href="https://www.bilibili.com/video/BV1MW41167Rf">https://www.bilibili.com/video/BV1MW41167Rf</a></li>
+<li><a href="https://www.bilibili.com/video/BV1vJ411n7F7?p=9">https://www.bilibili.com/video/BV1vJ411n7F7?p=9</a>  </li>
+</ul>
+]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>EM</tag>
+        <tag>HMM</tag>
+        <tag>马尔可夫</tag>
+        <tag>Viterbi</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>最大熵模型（MEM）数学推导思路</title>
+    <url>/2020/07/14/MEM%E6%9C%80%E5%A4%A7%E7%86%B5/</url>
+    <content><![CDATA[<h1 id="相关定义"><a href="#相关定义" class="headerlink" title="相关定义"></a>相关定义</h1><h2 id="熵的定义"><a href="#熵的定义" class="headerlink" title="熵的定义"></a>熵的定义</h2><p>离散随机变量 $X$ 的概率分布为 $P\left( X \right)$ ，在定义式中 $x$ 是 $X$ 的分量，熵定义为<br><a id="more"></a></p>
+<script type="math/tex; mode=display">
+H\left( P \right)=-\sum_{x}^{}{P\left( x \right)\log P\left( x \right)}</script><p>可以看出，熵满足</p>
+<script type="math/tex; mode=display">
+0\leq H\left( P \right)\leq \log\left| X \right|</script><p>其中， $\left| X \right|$ 是 $X$  的取值个数，当且仅当 $X$ 服从均匀分布时，右边等号成立。</p>
+<h2 id="模型定义"><a href="#模型定义" class="headerlink" title="模型定义"></a>模型定义</h2><p>我们得到的数据集为</p>
+<script type="math/tex; mode=display">
+T=\left\{ \left( x_{i},y_{i} \right) \right\}_{i=1}^{N}</script><p>其中， $x_{i}\in\mathbb{R}^{n}$ 。我们的目标是训练一个模型，对于给定的输入 $X$ ，输出一个分类 $Y$ 。模型认为 $Y$ 是一个随机变量，所以求的就是条件概率分布 $P\left( Y|X \right)$ 。</p>
+<p>从已有数据中可以得到一系列经验分布</p>
+<script type="math/tex; mode=display">
+\tilde P\left( x, y \right)=\tilde P\left( X=x, Y=y \right)=\frac{\nu\left( X=x, Y=y \right)}{N}</script><script type="math/tex; mode=display">
+\tilde P\left( x \right)=\tilde P\left( X=x \right)=\frac{\nu\left( X=x \right)}{N}</script><p>其中， $\nu$ 表示计数函数， $N$ 表示样本容量。</p>
+<p>我们用特征函数来描述 x 和 y 之间的某种事实关系</p>
+<script type="math/tex; mode=display">
+f\left( x,y \right)=
+\begin{cases} 
+1& \text{if }x\text{ and } y\text{ satisfy a certain relation}\\ 
+0& \text{else} 
+\end{cases}</script><p>特征函数关于经验分布 $\tilde P\left( X,Y \right)$ 的期望为</p>
+<script type="math/tex; mode=display">
+E_{\tilde P}\left( f \right)=\sum_{x, y}^{}{\tilde P\left( x, y \right)f\left( x,y \right)}</script><p>特征函数关于模型 $P\left( Y|X \right)$ 和经验分布 $\tilde P\left( X \right)$ 的期望为</p>
+<script type="math/tex; mode=display">
+E_{P}\left( f \right)=\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)f\left( x, y \right)}</script><p>当数据中的信息足够多时，可以认为 $E_{\tilde P}\left( f \right)=E_{P}\left( f \right)$ ，也就是</p>
+<script type="math/tex; mode=display">
+\sum_{x, y}^{}{\tilde P\left( x, y \right)f\left( x,y \right)}=\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)f\left( x, y \right)}</script><p>待训练的模型需要满足这个条件。定义条件概率分布 $P\left( Y|X \right)$ 上的条件熵为</p>
+<script type="math/tex; mode=display">
+H\left( P \right)=-\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)\log P\left( y|x \right)}</script><p>最大熵模型，顾名思义，就是在满足约束条件的同时，将条件熵最大化。</p>
+<h1 id="数学推导"><a href="#数学推导" class="headerlink" title="数学推导"></a>数学推导</h1><p>待优化问题为</p>
+<script type="math/tex; mode=display">
+\left\{ 
+\begin{aligned} 
+&\max \limits_{P}\ H\left( P \right)=-\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)\log P\left( y|x \right)}\\ 
+&\mathrm{s.t.}\quad\sum_{y}^{}{P\left( y|x \right)}=1;\quad E_{\tilde P}\left( f_{i} \right)=E_{P}\left( f_{i} \right),\  i=1,2,...,n 
+\end{aligned} 
+\right.</script><p>改写一下</p>
+<script type="math/tex; mode=display">
+\left\{ 
+\begin{aligned} 
+&\min \limits_{P}\ -H\left( P \right)=\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)\log P\left( y|x \right)}\\ 
+&\mathrm{s.t.}\quad\sum_{y}^{}{P\left( y|x \right)}=1;\quad E_{\tilde P}\left( f_{i} \right)-E_{P}\left( f_{i} \right)=0,\  i=1,2,...,n 
+\end{aligned} 
+\right.</script><p>接下来需要利用拉格朗日对偶性（支持向量机中用到的方法），转化为无约束最优化问题的对偶问题。首先写出拉格朗日函数</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad L\left( P, w \right)\\ 
+&=-H\left( P \right)+w_{0}\left( 1-\sum_{y}^{}{P\left( y|x \right)} \right)+\sum_{i=1}^{n}{w_{i}\left( E_{\tilde P}\left( f_{i} \right)-E_{P}\left( f_{i} \right) \right)}\\ 
+&=\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)\log P\left( y|x \right)}+w_{0}\left( 1-\sum_{y}^{}{P\left( y|x \right)} \right)\\
+&\qquad+\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}^{}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}-\sum_{x, y}^{}{\tilde P\left( x \right)P\left( y|x \right)f_{i}\left( x, y \right)} \right)}\\ 
+\end{aligned}</script><p>根据对偶性</p>
+<script type="math/tex; mode=display">
+\min\limits_{P}\ \max\limits_{w}\ L\left( P, w \right)\Leftrightarrow \max\limits_{w}\ \min\limits_{P}\ L\left( P, w \right)</script><p>于是，优化问题转化为</p>
+<script type="math/tex; mode=display">
+\max\limits_{w}\ \min\limits_{P}\ L\left( P, w \right)</script><p>于是先求 $\min\limits_{P}\ L\left( P, w \right)$</p>
+<script type="math/tex; mode=display">
+P_{w}=\mathop{\arg\min}_{P}\ L\left( P, w \right)=P_{w}\left( y|x \right)</script><p>求偏导数，并令其等于0</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \frac{\partial L\left( P, w \right)}{\partial P\left( y|x \right)}=0\\ 
+&\Rightarrow\sum_{x, y}{\tilde P\left( x \right)\left( 1+\log P\left( y|x \right) \right)}-\sum_{y}{w_{0}}-\sum_{i=1}^{n}{w_{i}\sum_{x, y}{\tilde P\left( x \right)f_{i}\left( x, y \right)}}=0\\ 
+&\Rightarrow\sum_{x, y}{\tilde P\left( x \right)\left( 1+\log P\left( y|x \right) \right)}-\sum_{x}{\tilde P\left( x \right)\sum_{y}{w_{0}}}-\sum_{x, y}{\tilde P\left( x \right)\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}}=0\\ 
+&\Rightarrow\sum_{x, y}{\tilde P\left( x \right)\left( 1+\log P\left( y|x \right) \right)}-\sum_{x, y}{\tilde P\left( x \right)w_{0}}-\sum_{x, y}{\tilde P\left( x \right)\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}}=0\\ 
+&\Rightarrow\sum_{x, y}{\tilde P\left( x \right)\left[ 1+\log P\left( y|x \right)-w_{0}-\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right]}=0 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程。在第二行到第三行的计算中，运用概率和为1，构造相同的项，为后面提取相同部分做铺垫。</p>
+</blockquote>
+<p>其中经验分布是从已经存在的样本中统计出来的，所以满足 $\tilde P\left( x \right)&gt;0$ ，于是有</p>
+<script type="math/tex; mode=display">
+1+\log P\left( y|x \right)-w_{0}-\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}=0</script><p>解得</p>
+<script type="math/tex; mode=display">
+P\left( y|x \right)=\exp\left( w_{0}-1+\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)</script><p>又因为有 $\sum_{y}{P\left( y|x \right)}=1$ ，所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{y}{\exp\left( w_{0}-1+\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}=1\\ 
+&\Rightarrow\exp\left( w_{0}-1 \right)\sum_{y}{\exp\left(\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}=1\\ 
+&\Rightarrow\exp\left( w_{0}-1 \right)=\frac{1}{\sum_{y}{\exp\left(\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}} 
+\end{aligned}</script><p>所以有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P_{w} 
+&=\exp\left( w_{0}-1+\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)\\ 
+&=\exp\left( w_{0}-1 \right)\exp\left( \sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)\\ 
+&=\frac{\exp\left( \sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}{Z_{w}\left( x \right)} 
+\end{aligned}</script><p>其中， $Z_{w}\left( x \right)$ 为规范化因子</p>
+<script type="math/tex; mode=display">
+Z_{w}\left( x \right)=\sum_{y}{\exp\left(\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}</script><p>将 $P_{w}$ 代入拉格朗日函数，就可以求得 $L\left( P, w \right) 关于 P\left( y|x \right)$ 的最小值。于是有</p>
+<script type="math/tex; mode=display">
+\Psi\left( w \right)=\min\limits_{P}\ L\left( P, w \right)= L\left( P_{w}, w \right)</script><p>继续求解最大化问题</p>
+<script type="math/tex; mode=display">
+w^{*}=\mathop{\arg\max}_{w}\ \Psi\left( w \right)</script><p>将 $\Psi\left( w \right)$ 展开</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\Psi\left( w \right)\\ 
+&=\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\log P_{w}\left( y|x \right)}+w_{0}\left( 1-\sum_{y}{P_{w}\left( y|x \right)} \right)\\
+&\qquad+\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}-\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)f_{i}\left( x, y \right)} \right)}\\  
+\end{aligned}</script><p>由于 $\sum_{y}{P_{w}\left( y|x \right)} =1$ ，代入上式</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\Psi\left( w \right)\\ 
+&=\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\log P_{w}\left( y|x \right)}+\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}-\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)f_{i}\left( x, y \right)} \right)}\\ 
+&=\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\log P_{w}\left( y|x \right)}+\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{i=1}^{n}{w_{i}\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)f_{i}\left( x, y \right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\log P_{w}\left( y|x \right)}+\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}}\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}+\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\left[ \log P_{w}\left( y|x \right)-\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right]} 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程。运用乘法分配律，移动连加符号，提取相同部分，为后续计算做铺垫。</p>
+</blockquote>
+<p>由于有</p>
+<script type="math/tex; mode=display">
+\log P_{w}\left( y|x \right)=\log \frac{\exp\left( \sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}{Z_{w}\left( x \right)}=\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}-\log Z_{w}\left( x \right)</script><p>代入上式</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\Psi\left( w \right)\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}+\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\left[\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)}-\log Z_{w}\left( x \right)-\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right]}\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{x, y}{\tilde P\left( x \right)P_{w}\left( y|x \right)\log Z_{w}\left( x \right)}\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{x}{\tilde P\left( x \right)\log Z_{w}\left( x \right)\sum_{y}{P_{w}\left( y|x \right)}}\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{x}{\tilde P\left( x \right)\log Z_{w}\left( x \right)}\\ 
+&=\sum_{i=1}^{n}{w_{i}\left( \sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)} \right)}-\sum_{x}{\tilde P\left( x \right)\log\left[ \sum_{y}{\exp\left(\sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)} \right]}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程。代入后计算，在第四行到第五行的计算中，利用了概率和为1进行化简。</p>
+</blockquote>
+<p>发现对数中存在真数相加的情况，且真数中存在待优化参数 $w$ ，直接求导难以解决，需要用特殊的迭代算法：改进的迭代尺度法（IIS）。</p>
+<p>关于 $w$ 的似然函数（也就是 $L\left( P_{w},w \right)=\Psi\left( w \right)$ ）写作</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+L\left( w \right)
+&=\sum_{i=1}^{n}{w_{i} \left(\sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}\right)}-\sum_{x}{\tilde P\left( x \right)\log Z_{w}\left( x \right)}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{w_{i}f_{i}\left( x,y \right)}}-\sum_{x}{\tilde P\left( x \right)\log Z_{w}\left( x \right)} 
+\end{aligned}</script><p>迭代将其最大化，假设从 $w$ 变化为 $w+\delta$ ，似然函数的值的变化为</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad L\left( w+\delta \right)-L\left( w \right)\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\left( w_{i}+\delta_{i} \right)f_{i}\left( x,y \right)}}-\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{w_{i}f_{i}\left( x,y \right)}}\\
+&\qquad-\sum_{x}{\tilde P\left( x \right)\log Z_{w+\delta}\left( x \right)}+\sum_{x}{\tilde P\left( x \right)\log Z_{w}\left( x \right)}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}-\sum_{x}{\tilde P\left( x \right)\log\frac{Z_{w+\delta}\left( x \right)}{Z_{w}\left( x \right)}} 
+\end{aligned}</script><p>当 $x&gt;0$ 时，不等式</p>
+<script type="math/tex; mode=display">
+x\geq1 + \ln x</script><p>恒成立， $x=1$ 时等号成立（用导数可以很容易证明）。所以对上面的式子套用不等式</p>
+<script type="math/tex; mode=display">
+-\log \alpha\geq 1-\alpha</script><p>所以有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad L\left( w+\delta \right)-L\left( w \right)\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}-\sum_{x}{\tilde P\left( x \right)\log\frac{Z_{w+\delta}\left( x \right)}{Z_{w}\left( x \right)}}\\ 
+&\geq \sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+\sum_{x}{\tilde P\left( x \right)\left( 1-\frac{Z_{w+\delta}\left( x \right)}{Z_{w}\left( x \right)} \right)}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+\sum_{x}{\tilde P\left( x \right)}-\sum_{x}{\tilde P\left( x \right)\frac{Z_{w+\delta}\left( x \right)}{Z_{w}\left( x \right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\frac{Z_{w+\delta}\left( x \right)}{Z_{w}\left( x \right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\frac{1}{Z_{w}\left( x \right)}\sum_{y}{\exp\left(\sum_{i=1}^{n}{\left( w_{i}+\delta \right)f_{i}\left( x, y \right)} \right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\frac{1}{Z_{w}\left( x \right)}\sum_{y}{\exp\left(\sum_{i=1}^{n}{ w_{i}f_{i}\left( x, y \right)} +\sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)}\right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\frac{1}{Z_{w}\left( x \right)}\sum_{y}{\left[ \exp\left(\sum_{i=1}^{n}{ w_{i}f_{i}\left( x, y \right)} \right)\exp\left( \sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)} \right) \right]}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{\left[ \frac{1}{Z_{w}\left( x \right)}\exp\left(\sum_{i=1}^{n}{ w_{i}f_{i}\left( x, y \right)} \right)\exp\left( \sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)} \right) \right]}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{\left[ P_{w}\left( y|x \right)\exp\left( \sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)} \right) \right]}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程。根据上面的不等式放缩后，第四行到第五行利用了概率和为1的性质；之后利用指数乘法的性质对 $\exp$ 函数进行拆解，一路拆解到倒数第二行时，凑出了 </p>
+<script type="math/tex; mode=display">
+P_{w}\left( y|x \right)=\frac{\exp\left( \sum_{i=1}^{n}{w_{i}f_{i}\left( x, y \right)} \right)}{Z_{w}\left( x \right)}</script><p>的形式，于是在最后一行进行了替换。</p>
+</blockquote>
+<p>记等号右边部分为</p>
+<script type="math/tex; mode=display">
+A\left( \delta|w \right)=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\exp\left( \sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)} \right)}}</script><p>于是有</p>
+<script type="math/tex; mode=display">
+L\left( w+\delta \right)-L\left( w \right)\geq A\left( \delta|w \right)</script><p>我们定义</p>
+<script type="math/tex; mode=display">
+f^{\sharp}\left( x,y \right)=\sum_{i}{f_{i}\left( x,y \right)}</script><p>可以继续化简</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad A\left( \delta|w \right)\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\exp\left( \sum_{i=1}^{n}{ \delta_{i}f_{i}\left( x, y \right)} \right)}}\\ 
+&=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\exp\left( f^{\sharp}\left( x,y \right)\sum_{i=1}^{n}{ \frac{\delta_{i}f_{i}\left( x, y \right)}{ f^{\sharp}\left( x,y \right)}} \right)}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。分子分母同乘 $f^{\sharp}\left( x,y \right)$ ，由于 </p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^{n}{\frac{f_{i}\left( x,y \right)}{f^{\sharp}\left( x,y \right)}}=1</script><p>所以可以在后续使用Jensen不等式。</p>
+</blockquote>
+<p>利用Jensen不等式进行放缩（和支持向量机中的方法类似）</p>
+<script type="math/tex; mode=display">
+\exp\left(\sum_{i=1}^{n}{ \frac{f_{i}\left( x, y \right)}{ f^{\sharp}\left( x,y \right)}\delta_{i}f^{\sharp}\left( x,y \right)} \right)\leq \sum_{i=1}^{n}{\frac{f_{i}\left( x, y \right)}{ f^{\sharp}\left( x,y \right)}\exp\left( \delta_{i}f^{\sharp}\left( x,y \right) \right)}</script><p>所以有</p>
+<script type="math/tex; mode=display">
+A\left( \delta|w \right)\geq \sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\sum_{i=1}^{n}{\frac{f_{i}\left( x, y \right)}{ f^{\sharp}\left( x,y \right)}\exp\left( \delta_{i} f^{\sharp}\left( x,y \right) \right)}}}</script><p>记不等号右边为</p>
+<script type="math/tex; mode=display">
+B\left( \delta|w \right)=\sum_{x, y}{\tilde P\left( x, y \right)\sum_{i=1}^{n}{\delta_{i} f_{i}\left( x,y \right)}}+1-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\sum_{i=1}^{n}{\frac{f_{i}\left( x, y \right)}{ f^{\sharp}\left( x,y \right)}\exp\left( \delta_{i} f^{\sharp}\left( x,y \right) \right)}}}</script><p>所以有</p>
+<script type="math/tex; mode=display">
+L\left( w+\delta \right)-L\left( w \right)\geq A\left( \delta|w \right)\geq B\left( \delta|w \right)</script><p>为了最大化 $L\left( w+\delta \right)-L\left( w \right)$ ，可以最大化 $B\left( \delta|w \right)$ ，直接求导并令导数为 $0$ 即可</p>
+<script type="math/tex; mode=display">
+\frac{\partial B\left( \delta|w \right)}{\partial \delta_{i}}=\sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}-\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\sum_{i=1}^{n}{f_{i}\left( x, y \right)\exp\left( \delta_{i} f^{\sharp}\left( x,y \right) \right)}}}=0</script><p>这样，对每个 $\delta_{i}$ 求解方程</p>
+<script type="math/tex; mode=display">
+g\left( \delta_{i} \right)=\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left( y|x \right)\sum_{i=1}^{n}{f_{i}\left( x, y \right)\exp\left( \delta_{i} f^{\sharp}\left( x,y \right) \right)}}}-\sum_{x, y}{\tilde P\left( x, y \right)f_{i}\left( x,y \right)}=0</script><p>就可以得到 $\delta$</p>
+<p>求解方程时可以采用牛顿迭代法，每一轮的迭代过程为</p>
+<script type="math/tex; mode=display">
+\delta_{i}^{\left( k+1 \right)}=\delta_{i}^{\left( k \right)}-\frac{g\left(\delta_{i}^{\left( k \right)} \right)}{g^{'}\left(\delta_{i}^{\left( k \right)} \right)}</script><p>直到更新的幅度小于一定的阈值，就得到了近似解。</p>
+]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>最大熵</tag>
+        <tag>概率图模型</tag>
+      </tags>
+  </entry>
 </search>

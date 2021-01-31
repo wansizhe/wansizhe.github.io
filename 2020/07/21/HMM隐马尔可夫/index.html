@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="EM,HMM,马尔可夫,Viterbi," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概要本文主要从详细的数学推导角度，讲解HMM模型，主要内容包括HMM模型的  基本构成元素（状态序列与状态值、观测序列与观测值） 三个参数（初始概率分布、转移矩阵、发射矩阵） 两个假设（齐次马尔可夫假设、观测独立假设） 三个问题（概率计算、参数学习、状态预测） 四个算法（Forward、Backward、Baum-Welch、Viterbi）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔可夫模型（HMM）数学推导思路">
+<meta property="og:url" content="http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/index.html">
+<meta property="og:site_name" content="哲 · 思">
+<meta property="og:description" content="概要本文主要从详细的数学推导角度，讲解HMM模型，主要内容包括HMM模型的  基本构成元素（状态序列与状态值、观测序列与观测值） 三个参数（初始概率分布、转移矩阵、发射矩阵） 两个假设（齐次马尔可夫假设、观测独立假设） 三个问题（概率计算、参数学习、状态预测） 四个算法（Forward、Backward、Baum-Welch、Viterbi）">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-07-21T13:36:44.000Z">
+<meta property="article:modified_time" content="2021-01-31T13:59:54.426Z">
+<meta property="article:author" content="Gianni">
+<meta property="article:tag" content="EM">
+<meta property="article:tag" content="HMM">
+<meta property="article:tag" content="马尔可夫">
+<meta property="article:tag" content="Viterbi">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wansizhe.github.io/2020/07/21/HMM隐马尔可夫/"/>
+
+
+
+
+
+  <title>隐马尔可夫模型（HMM）数学推导思路 | 哲 · 思</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">哲 · 思</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="哲 · 思">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">隐马尔可夫模型（HMM）数学推导思路</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-21T21:36:44+08:00">
+                2020-07-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E4%B8%8E%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习算法与模型</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h1><p>本文主要从详细的数学推导角度，讲解HMM模型，主要内容包括HMM模型的</p>
+<ul>
+<li>基本构成元素（状态序列与状态值、观测序列与观测值）</li>
+<li>三个参数（初始概率分布、转移矩阵、发射矩阵）</li>
+<li>两个假设（齐次马尔可夫假设、观测独立假设）</li>
+<li>三个问题（概率计算、参数学习、状态预测）</li>
+<li>四个算法（Forward、Backward、Baum-Welch、Viterbi）</li>
+</ul>
+<a id="more"></a>
+<h1 id="模型简介"><a href="#模型简介" class="headerlink" title="模型简介"></a>模型简介</h1><!--[HMM模型示意图](HMM.png)-->
+<h2 id="状态序列和状态值"><a href="#状态序列和状态值" class="headerlink" title="状态序列和状态值"></a>状态序列和状态值</h2><p>上图中 $I$ 表示一个状态序列，长度为 $T$ ， $i_{t}$ 表示状态序列中的第 $t$ 个状态值。状态值的取值集合为 $Q=\left\{ q_{1},q_{2},…,q_{N} \right\}$ ，也就是每个状态有 $N$ 种不同的取值，任意 $i_{t}\in Q$ 。词性标注问题中，词性就是状态值，一句话分词后的序列被标注后，得到的词性序列就是状态序列。</p>
+<h2 id="观测序列和观测值"><a href="#观测序列和观测值" class="headerlink" title="观测序列和观测值"></a>观测序列和观测值</h2><p>上图中 $O$ 表示一个观测序列，长度也为 $T$ ， $o_{t}$ 表示序列中的第 $t$ 个观测值。观测值的取值集合为 $V=\left\{ v_{1},v_{2},…,v_{M} \right\}$ ，也就是观测变量有 $M$ 种不同的取值，任意 $o_{t}\in V$ 。词性标注问题中，连续的分词结果就是观测序列，其中每个词就是一个观测值。</p>
+<h2 id="模型参数"><a href="#模型参数" class="headerlink" title="模型参数"></a>模型参数</h2><p>HMM模型参数为 $\lambda = \left( \pi,A,B \right)$ ，其中包括：</p>
+<ol>
+<li>初始概率分布 $\pi=\left( \pi_{1},\pi_{2},…,\pi_{N} \right)$ ，其中 $\pi_{k}=P\left( i_{1}=q_{k} \right)$ 。初状态取值为 $q_{k}$ 的概率，显然满足 $\sum_{k=1}^{N}{\pi_{k}}=1$ </li>
+<li>转移矩阵 $A=\left[ a_{jk} \right]$ ，其中 $j=1,…,N$ ， $k=1,…,N$ ， $a_{jk}=P\left( i_{t+1}=q_{k}|i_{t}=q_{j} \right)$ 。某一个状态取值为 $q_{j}$ 的条件下，下一个状态取值为 $q_{k}$ 的概率，也就是上图中第一排节点之间的横向箭头的含义，显然满足 $\sum_{k=1}^{N}{a_{jk}}=1$ </li>
+<li>发射矩阵 $B=\left[ b_{j}\left( k \right) \right]$ ，其中 $j=1,…,M$ ， $k=1,…,N$ ，  $b_{j}\left( k \right)=P\left( o_{t}=v_{k}|i_{t}=q_{j} \right)$ 。某一个状态取值为 $q_{j}$ 的条件下，对应的观测值为 $v_{k}$ 的概率，也就是上图中第一排节点和第二排节点之间的纵向箭头的含义，显然满足 $\sum_{k=1}^{N}{b_{j}\left( k \right)}=1$ </li>
+</ol>
+<p><strong>自然语言处理中，分词问题（给每个字标注“词首”、“词中”、“词尾”）、词性标注问题（给每个词标注“名词”、“动词”、“形容词”等）都可以套用HMM模型，后续的算法推导，可以将应用场景代入，便于理解。</strong></p>
+<h1 id="模型假设"><a href="#模型假设" class="headerlink" title="模型假设"></a>模型假设</h1><p>两个重要假设是简化后续数学推导的关键，会多次重复使用</p>
+<h2 id="齐次马尔可夫假设"><a href="#齐次马尔可夫假设" class="headerlink" title="齐次马尔可夫假设"></a>齐次马尔可夫假设</h2><script type="math/tex; mode=display">
+P\left( i_{t+1}|i_{1},i_{2},...,i_{t},o_{1},o_{2},...,o_{t} \right)=P\left( i_{t+1}|i_{t} \right)</script><p>其含义为：下一状态的取值只与当前状态值有关，与更早的状态值或观察值无关。从HMM的模型示意图中可以看出来，第一排的每一个状态节点，只有前一个状态节点指向它，没有其他任何节点再指向它。</p>
+<h2 id="观测独立假设"><a href="#观测独立假设" class="headerlink" title="观测独立假设"></a>观测独立假设</h2><script type="math/tex; mode=display">
+P\left( o_{t}|i_{1},i_{2},...,i_{t},o_{1},o_{2},...,o_{t} \right)=P\left( o_{t}|i_{t} \right)</script><p>其含义为：当前的观测值只与当前状态值有关，与更早的状态值或者观测值无关。从HMM的模型示意图中可以看出来，第二排的每一个观测节点，只有上方与之对应的状态节点指向它，没有其他任何节点再指向它。</p>
+<p>另外，为了简化运算，后续还会多次用到联合概率和边缘概率的关系、联合概率和条件概率的关系。</p>
+<h1 id="问题一-概率计算"><a href="#问题一-概率计算" class="headerlink" title="问题一  概率计算"></a>问题一  概率计算</h1><p>这个问题就是已知一个确定的HMM模型，求一个观测序列 $O$ 出现的概率，也就是 $P\left( O|\lambda \right)$ </p>
+<h2 id="直接计算"><a href="#直接计算" class="headerlink" title="直接计算"></a>直接计算</h2><script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I \right) &= \sum_{I}{P\left( O, I|\lambda \right)}\\ 
+&=\sum_{I}{P\left( O |I,\lambda \right)P\left( I|\lambda \right)}\\ 
+\end{aligned}</script><p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( I|\lambda \right)&=P\left(i_{1},i_{2},...,i_{T} |\lambda \right)\\ 
+&=P\left(i_{T}|i_{1},i_{2},...,i_{T-1}, \lambda \right)P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=P\left(i_{T}|i_{T-1}, \lambda \right)P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right) 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用条件概率和联合概率的关系、齐次马尔可夫假设进行运算。</p>
+</blockquote>
+<p>同理</p>
+<script type="math/tex; mode=display">
+P\left(i_{1},i_{2},...,i_{T-1} |\lambda \right)=a_{i_{T-2}i_{T-1}}P\left(i_{1},i_{2},...,i_{T-2}| \lambda \right)</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( I|\lambda \right)&=a_{i_{T-1}i_{T}}P\left(i_{1},i_{2},...,i_{T-1}| \lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}\cdot a_{i_{T-2}i_{T-1}}\cdot a_{i_{T-3}i_{T-2}}...a_{i_{1}i_{2}}\cdot P\left( i_{1}|\lambda \right)\\ 
+&=a_{i_{T-1}i_{T}}\cdot a_{i_{T-2}i_{T-1}}\cdot a_{i_{T-3}i_{T-2}}...a_{i_{1}i_{2}}\cdot  \pi_{i_{1}}\\ 
+&=\pi_{i_{1}}\prod_{t=2}^{T}{a_{i_{t-1}i_{t}}} 
+\end{aligned}</script><p>另外</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I,\lambda \right)&=P\left(o_{1},o_{2},...,o_{T} |i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=P\left(o_{1}|o_{2},...,o_{T},i_{1},i_{2},...,i_{T},\lambda \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=P\left(o_{1}|i_{1},\lambda \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{1}}\left( o_{1} \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right) 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用条件概率和联合概率的关系、观测独立假设进行运算。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)&=P\left( o_{2}|i_{2} \right)P\left(o_{3},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{2}}\left( o_{2}\right)P\left(o_{3},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right) 
+\end{aligned}</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I,\lambda \right)&=b_{i_{1}}\left( o_{1} \right)P\left(o_{2},...,o_{T}|i_{1},i_{2},...,i_{T},\lambda \right)\\ 
+&=b_{i_{1}}\left( o_{1} \right)\cdot b_{i_{2}}\left( o_{2} \right)...b_{i_{T-1}}\left( o_{T-1} \right)\cdot b_{i_{T}}\left( o_{T} \right)\\ 
+&=\prod_{t=1}^{T}{b_{i_{t}}\left( o_{t} \right)} 
+\end{aligned}</script><p>综上</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|I \right) &=\sum_{I}{P\left( O |I,\lambda \right)P\left( I|\lambda \right)}\\ 
+&=\sum_{I}{\left[ \pi_{i_{1}}\left( \prod_{t=2}^{T}{a_{i_{t-1}i_{t}}} \right)\left( \prod_{t=1}^{T}{b_{i_{t}}\left( o_{t} \right)} \right) \right]} 
+\end{aligned}</script><p>这样的计算复杂度太高，不适合计算机，我们对以上计算进行改进，设计两个基于递推关系的动态规划方法，分别是前向算法和后向算法</p>
+<h2 id="前向算法"><a href="#前向算法" class="headerlink" title="前向算法"></a>前向算法</h2><p>我们定义</p>
+<script type="math/tex; mode=display">
+\alpha_{t}\left( k \right) = P\left( o_{1},o_{2},...,o_{t},i_{t}=q_{k} | \lambda \right)</script><p>所以就有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|\lambda \right) &= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T},i_{T}=q_{k} | \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{\alpha_{T}\left( k \right)} 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。利用边缘概率和联合概率的关系进行运算。</p>
+</blockquote>
+<p>推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\alpha_{t+1}\left( k \right) &=P\left( o_{1},...,o_{t},o_{t+1},i_{t+1}=q_{k} | \lambda \right)\\ 
+&=\sum_{j=1}^{N}{P\left( o_{1},...,o_{t},o_{t+1},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j}, \lambda \right)P\left(o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(o_{1},...,o_{t},i_{t+1}=q_{k},i_{t}=q_{j} | \lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(i_{t+1}=q_{k} |i_{t}=q_{j}, o_{1},...,o_{t},\lambda \right)P\left(i_{t}=q_{j}, o_{1},...,o_{t}|\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}| i_{t+1}=q_{k}, \lambda \right)P\left(i_{t+1}=q_{k} |i_{t}=q_{j},\lambda \right)P\left(i_{t}=q_{j}, o_{1},...,o_{t}|\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{b_{k}\left( o_{t+1} \right)\cdot a_{jk}\cdot \alpha_{t}\left( j \right)}\\ 
+&=b_{k}\left( o_{t+1} \right)\cdot\sum_{j=1}^{N}{a_{jk}\cdot \alpha_{t}\left( j \right)}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用两个假设进行运算化简。</p>
+</blockquote>
+<p>得到递推关系后，就可以写出前向算法流程</p>
+<p>输入：模型参数 $\lambda$ （初始概率分布 $\pi$ 、转移矩阵 $A$  、发射矩阵 $B$ ），一个观测序列 $O$ </p>
+<p>输出： $P\left( O|\lambda \right)$</p>
+<p>算法过程：</p>
+<ol>
+<li>构造一个 $T\times N$ 的动态规划矩阵，用于存储所有 $\alpha_{t}\left( k \right), t=1,…,T, k=1,…,N$ ，并初始化 <script type="math/tex; mode=display">
+\alpha_{1}\left( k \right)=\pi_{k}\cdot b_{k}\left( o_{1} \right)</script></li>
+<li>递推求解，依次对所有 $t=1,…,T-1$ ，遍历每一个 $k=1,…,N$ ，递推计算 <script type="math/tex; mode=display">\alpha_{t+1}\left( k \right)=b_{k}\left( o_{t+1} \right)\cdot\sum_{j=1}^{N}{a_{jk}\cdot \alpha_{t}\left( j \right)}</script></li>
+<li>最后计算 <script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{k=1}^{N}{\alpha_{T}\left( k \right)}</script></li>
+</ol>
+<p>以上就是前向算法，可以看出，空间复杂度为 $O\left( T\times N \right)$ ，时间复杂度为 $O\left( T\times N\times N \right)$ </p>
+<h2 id="后向算法"><a href="#后向算法" class="headerlink" title="后向算法"></a>后向算法</h2><p>和前向算法类似，定义</p>
+<script type="math/tex; mode=display">
+\beta_{t}\left( k \right)=P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t}=q_{k},\lambda \right)</script><p>所以有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( O|\lambda \right)&= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T},i_{1}=q_{k} | \lambda \right)}\\ 
+&= \sum_{k=1}^{N}{P\left( o_{1},o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{P\left( o_{1}|o_{2},...,o_{T},i_{1}=q_{k}, \lambda \right)P\left(o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{P\left( o_{1}|i_{1}=q_{k}, \lambda \right)P\left(o_{2},...,o_{T}|i_{1}=q_{k}, \lambda \right)P\left(i_{1}=q_{k}| \lambda \right)}\\ 
+&=\sum_{k=1}^{N}{b_{k}\left( o_{1} \right)\beta_{1}\left( k \right) \pi_{k}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用观测独立假设进行运算化简。</p>
+</blockquote>
+<p>推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\beta_{t}\left( k \right)&=P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t}=q_{k},\lambda \right)\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1},o_{t+2},...,o_{T},i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1},o_{t+2},...,o_{T}|i_{t+1}=q_{j},i_{t}=q_{k},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|o_{t+2},...,o_{T},i_{t+1}=q_{j},\lambda \right)P\left( o_{t+2},...,o_{T}|i_{t+1}=q_{j},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{P\left( o_{t+1}|i_{t+1}=q_{j},\lambda \right)P\left( o_{t+2},...,o_{T}|i_{t+1}=q_{j},\lambda \right)P\left( i_{t+1}=q_{j}|i_{t}=q_{k},\lambda \right)}\\ 
+&=\sum_{j=1}^{N}{b_{j}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( j \right)\cdot a_{kj}}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算。先利用边缘概率和联合概率的关系进行构造，利用条件概率和联合概率的关系进行提取，再利用观测独立假设进行运算化简。</p>
+</blockquote>
+<p>得到递推关系后，就可以写出后向算法流程</p>
+<p>输入：模型参数 $\lambda$ （初始概率分布 $\pi$ 、转移矩阵 $A$  、发射矩阵 $B$ ），一个观测序列 $O$ </p>
+<p>输出： $P\left( O|\lambda \right)$ </p>
+<p>算法过程：</p>
+<ol>
+<li>构造一个 $T\times N$ 的动态规划矩阵，用于存储所有 $\beta_{t}\left( k \right), t=1,…,T, k=1,…,N$ ，并初始化 <script type="math/tex; mode=display">
+\alpha_{T}\left( k \right)=1</script></li>
+<li>递推求解，依次对所有 $t=T-1,…,1$ ，遍历每一个 $k=1,…,N$ ，递推计算 <script type="math/tex; mode=display">
+\beta_{t}\left( k \right)=\sum_{j=1}^{N}{a_{kj}\cdot b_{j}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( j \right)}</script></li>
+<li>最后计算 <script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{k=1}^{N}{\pi_{k}\cdot b_{k}\left( o_{1} \right)\cdot\beta_{1}\left( k \right)}</script></li>
+</ol>
+<p>以上就是后向算法，可以看出，空间复杂度为 $O\left( T\times N \right)$ ，时间复杂度为 $O\left( T\times N\times N \right)$</p>
+<h2 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h2><p>为了帮助理解，给出下图</p>
+<!-- [前向算法、后向算法图示](ForwardBackward.png)-->
+<p>如图，选择任意一个时刻 $t=1,…,T-1$ ，假设 $i_{t}=q_{j}$ ， $i_{t+1}=q_{k}$ ，其中 $j,k=1,…,N$ 。左侧黄色直角框表示的就是 $\alpha_{t}\left( j \right)$ ，右侧黄色钝角框表示的就是 $\beta_{t+1}\left( k \right)$ ，根据这张图也可以理解如下表达式</p>
+<script type="math/tex; mode=display">
+P\left( O|\lambda \right)=\sum_{j=1}^{N}{\sum_{k=1}^{N}{\left[ \alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right) \right]}}</script><p>这张图也能帮助理解后面 $\gamma_{t}\left( k \right)$ 和 $\xi_{t}\left( j,k \right)$ 的表达含义。</p>
+<h1 id="问题二-模型学习"><a href="#问题二-模型学习" class="headerlink" title="问题二  模型学习"></a>问题二  模型学习</h1><p>这个问题就是给定样本数据，求模型的参数。如果样本中只包含观测序列，那么这就是一个无监督学习过程；如果样本中包含观测序列及其对应的状态序列，那么这就是一个监督学习过程。</p>
+<h2 id="监督学习"><a href="#监督学习" class="headerlink" title="监督学习"></a>监督学习</h2><p>当我们拥有了观测序列及对应的状态序列，我们就可以根据统计信息，以频率近似概率，直接快速计算参数。所以需要非常清楚三个参数的具体意义。</p>
+<p>首先，初始概率分布。假设 $M_{k}$ 表示样本中以 $q_{k}$ 为起始点出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{\pi}_{k}=\frac{M_{k}}{\sum_{k=1}^{N}{M_{k}}}</script><p>其次，转移矩阵。假设 $M_{jk}$ 表示样本中从 $q_{j}$ 状态直接转移到 $q_{k}$ 状态出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{a}_{jk}=\frac{M_{jk}}{\sum_{k=1}^{N}{M_{jk}}}</script><p>最后，发射矩阵。假设 $M_{jk}$ 表示样本中由 $q_{j}$ 状态直接得到观测值 $v_{k}$ 出现的次数，那么</p>
+<script type="math/tex; mode=display">
+\hat{b}_{j}\left( k \right)=\frac{M_{jk}}{\sum_{k=1}^{N}{M_{jk}}}</script><h2 id="无监督学习——-Baum-Welch算法（EM）"><a href="#无监督学习——-Baum-Welch算法（EM）" class="headerlink" title="无监督学习—— Baum-Welch算法（EM）"></a>无监督学习—— Baum-Welch算法（EM）</h2><p>样本数据中不包含状态序列时，就需要使用优化算法。Baum-Welch算法实际上就是EM算法。接下来的推导直接套用EM算法的结论，复习见下方链接。</p>
+<blockquote>
+<p>EM算法链接</p>
+</blockquote>
+<p>直接套用，注意上角标出现的 $\left( t \right)$ 表示第 $t$ 轮迭代优化后的参数， $\lambda^{\left( t \right)}=\left( \pi^{\left( t \right)},A^{\left( t \right)},B^{\left( t \right)} \right)$ ，小角标出现的 $t$ 表示序列中的第 $t$ 时刻</p>
+<script type="math/tex; mode=display">
+\begin{aligned}  \lambda^{\left( t+1 \right)}&=\mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I|O,\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &= \mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)P\left( O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &= \mathop{\arg\max}_{\lambda}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。第二行到第三行， P\left( O|\lambda^{\left( t \right)} \right) 是常数，可以舍去。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+P\left( O,I|\lambda \right)=\pi_{i_{1}}\cdot \prod_{t=2}^{T}a_{i_{t-1}i_{t}} \cdot  \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)</script><p>代入Q函数进行运算</p>
+<script type="math/tex; mode=display">
+\begin{aligned} Q\left( \lambda, \lambda^{\left( t \right)} \right)&=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{P\left( O,I|\lambda \right)}}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log{\left( \pi_{i_{1}}\cdot \prod_{t=2}^{T}a_{i_{t-1}i_{t}} \cdot  \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)  \right)}}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\left( \log\pi_{i_{1}}+ \log\prod_{t=2}^{T}a_{i_{t-1}i_{t}} + \log \prod_{t=1}^{T}b_{i_{t}}\left( o_{t} \right)  \right)}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\left( \log\pi_{i_{1}}+ \sum_{t=2}^{T}{\log a_{i_{t-1}i_{t}}} + \sum_{t=1}^{T}{\log b_{i_{t}}\left( o_{t} \right)}  \right)}\\ &=\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}+\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\sum_{t=2}^{T}{\log a_{i_{t-1}i_{t}}}}+\sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\sum_{t=1}^{T}{\log b_{i_{t}}\left( o_{t} \right)} }\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。对数中真数连乘改写为对数连加，将三种参数分离。</p>
+</blockquote>
+<p>以求参数 $\pi$ 为例</p>
+<script type="math/tex; mode=display">
+\begin{aligned} \pi^{\left( t+1 \right)}&= \mathop{\arg\max}_{\pi}\ Q\left( \lambda, \lambda^{\left( t \right)} \right)\\ &=\mathop{\arg\max}_{\pi}\ \sum_{I}{P\left( I,O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{...\sum_{i_{T}}{P\left( i_{1},...,i_{T},O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{\log\pi_{i_{1}}\sum_{i_{2}...i_{T}}{P\left( i_{1},i_{2},...,i_{T},O|\lambda^{\left( t \right)} \right)}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{i_{1}}{P\left( i_{1},O|\lambda^{\left( t \right)} \right)\log\pi_{i_{1}}}\\ &=\mathop{\arg\max}_{\pi}\ \sum_{k=1}^{N}{P\left( i_{1}=q_{k},O|\lambda^{\left( t \right)} \right)\log\pi_{k}}\\ \end{aligned}</script><blockquote>
+<p>解释一下上面的运算。将连加部分展开，舍去与参数优化无关的项。</p>
+</blockquote>
+<p>并且有约束条件</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{N}{\pi_{k}}=1</script><p>写出拉格朗日函数</p>
+<script type="math/tex; mode=display">
+L\left( \pi, \eta \right)=\sum_{k=1}^{N}{P\left( i_{1}=q_{k},O|\lambda^{\left( t \right)} \right)\log\pi_{k}}+\eta\left( \sum_{k=1}^{N}{\pi_{k}}-1 \right)</script><p>求偏导数，令其为0</p>
+<script type="math/tex; mode=display">
+\begin{aligned} &\quad \frac{\partial L}{\partial \pi_{k}}=\frac{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}{\pi_{k}}+\eta=0\\ &\Rightarrow P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)+\eta\pi_{k}=0\\ &\Rightarrow \sum_{k=1}^{N}{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}+\sum_{k=1}^{N}{\eta\pi_{k}}=0\\ &\Rightarrow P\left( O|\lambda^{\left( t \right)} \right)+\eta=0\\ &\Rightarrow \eta = -P\left( O|\lambda^{\left( t \right)} \right) \end{aligned}</script><p>将 $\eta$ 反代回到第二行，得到</p>
+<script type="math/tex; mode=display">
+\pi_{k}=\frac{P\left( O,i_{1}=q_{k}|\lambda^{\left( t \right)} \right)}{P\left( O|\lambda^{\left( t \right)} \right)}</script><p>同样的方法求解转移矩阵和发射矩阵，得到</p>
+<script type="math/tex; mode=display">
+a_{jk}=\frac{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},i_{t+1}=q_{k}|\lambda^{\left( t \right)}  \right)}}{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}</script><script type="math/tex; mode=display">
+b_{j}\left( k \right)=\frac{\sum_{t=1}^{T-1}{P\left( O,o_{t}=v_{k},i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}{\sum_{t=1}^{T-1}{P\left( O,i_{t}=q_{j},|\lambda^{\left( t \right)}  \right)}}</script><p>显然，这些参数的计算要依赖于前面的概率计算问题。为例和前面的前向算法、后向算法关联，方便代码编写，引入下面一些表达</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\gamma_{t}\left( k \right)
+&=P\left( i_{t}=q_{k}|O, \lambda \right)\\ 
+&=\frac{P\left( i_{t}=q_{k},O|\lambda \right)}{P\left( O| \lambda \right)}\\ 
+&=\frac{\alpha_{t}\left( k \right)\beta_{t}\left( k \right)}{\sum_{j=1}^{N}{\alpha_{t}\left( j \right)\beta_{t}\left( j \right)}}\\ 
+\end{aligned}</script><script type="math/tex; mode=display">
+\begin{aligned}  
+\xi_{t}\left( j,k \right)
+&=P\left( i_{t}=q_{j},i_{t+1}=q_{k}|O,\lambda \right)\\ 
+&=\frac{P\left( i_{t}=q_{j},i_{t+1}=q_{k},O|\lambda \right)}{P\left( O|\lambda \right)}\\ 
+&=\frac{\alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right)}{\sum_{j=1}^{N}{\sum_{k=1}^{N}{\left[ \alpha_{t}\left( j \right)\cdot a_{jk}\cdot b_{k}\left( o_{t+1} \right)\cdot\beta_{t+1}\left( k \right) \right]}}}  
+\end{aligned}</script><p>于是有</p>
+<script type="math/tex; mode=display">
+\pi_{k}=\gamma_{1}\left( k \right)</script><script type="math/tex; mode=display">
+a_{jk}=\frac{\sum_{t=1}^{T-1}{\xi_{t}\left( j,k \right)}}{\sum_{t=1}^{T-1}{\gamma_{t}\left( j \right)}}</script><script type="math/tex; mode=display">
+b_{j}\left( k \right)=\frac{\sum_{t=1,o_{t}=v_{k}}^{T}{\gamma_{t}\left( j \right)}}{\sum_{t=1}^{T}{\gamma_{t}\left( j \right)}}</script><p>Baum-Welch算法流程如下</p>
+<p>输入：观测序列 $O=\left( o_{1},o_{2},…,o_{T} \right)$ </p>
+<p>输出：模型参数 $\lambda=\left( \pi,A,B \right)$ </p>
+<p>算法流程：</p>
+<ol>
+<li>$n=0$ ，初始化参数 $\pi_{k}^{\left( 0 \right)}$ ， $a_{jk}^{\left( 0 \right)}$ ， $b_{j}^{\left( 0 \right)}\left( k \right)$ ，组成 $\lambda^{\left( 0 \right)}=\left( \pi^{\left( 0 \right)},A^{\left( 0 \right)},B^{\left( 0 \right)} \right)$ ，其中 $k=1,…,N$ </li>
+<li>迭代优化， $n=1,2,…$ ， <script type="math/tex; mode=display">
+\pi_{k}^{\left( n+1 \right)}=\gamma_{1}\left( k \right)</script><script type="math/tex; mode=display">
+a_{jk}^{\left( n+1 \right)}=\frac{\sum_{t=1}^{T-1}{\xi_{t}\left( j,k \right)}}{\sum_{t=1}^{T-1}{\gamma_{t}\left( j \right)}}</script><script type="math/tex; mode=display">
+b_{j}^{\left( n+1 \right)}\left( k \right)=\frac{\sum_{t=1,o_{t}=v_{k}}^{T}{\gamma_{t}\left( j \right)}}{\sum_{t=1}^{T}{\gamma_{t}\left( j \right)}}</script></li>
+<li>直到达到最大迭代轮数或者已经达到最优值，结束</li>
+</ol>
+<h1 id="问题三-预测"><a href="#问题三-预测" class="headerlink" title="问题三  预测"></a>问题三  预测</h1><p>这个问题就是已知一个确定的HMM模型，给出一个观测序列 $O$ ，求出最有可能的状态序列 $I$</p>
+<h2 id="Viterbi算法"><a href="#Viterbi算法" class="headerlink" title="Viterbi算法"></a>Viterbi算法</h2><p>依旧是动态规划思想，先求出最大概率，然后回溯路径上每个节点，得到最有可能的状态序列</p>
+<!--[Viterbi算法图示](viterbi.png)-->
+<p>如上图，每一个状态的取值都可以是 $q_{1}$ 到 $q_{N}$ 中的一个。先正向计算概率，每次计算完概率后，要保存走到当前节点的概率值，以便于继续向后计算。</p>
+<p>例如，计算 $i_{2}$ 到 $i_{3}$ 时，需要遍历 $i_{3}$ 下面的 $q_{1}$ 至 $q_{N}$ 。计算 $q_{k}$ 时，需要找到从 $i_{2}$ 的哪个取值出发，最有可能到达 $i_{3}$ 下的 $q_{k}$ 。比如上图，遍历到 $i_{3}$ 下的 $q_{5}$ ，假如经过计算，到达 $\left( i_{2},q_{2} \right)$ 节点的概率和 $q_{2}$ 到 $q_{5}$ 的转移概率相乘后的结果最大，这个结果就是到达 $\left( i_{3},q_{5} \right)$ 的概率。要到达 $i_{3}$ 的 $q_{5}$ ，就要从 $i_{2}$ 的 $q_{2}$ 出发，也就是说 $\left( i_{3},q_{5} \right)$ 的前趋节点是 $\left( i_{2},q_{2} \right)$ ，记录下前趋节点。</p>
+<p>仿照上面的计算思路，一步步向后推进。当到达终点 $i_{T}$ 后，从中找到那个到达概率最大的点，按照记录下的前趋节点，一步步回溯，找到来时的路。</p>
+<p>我们定义</p>
+<script type="math/tex; mode=display">
+\delta_{t}\left( k \right)=\mathop{\max}_{i_{1},...,i_{t-1}}\ P\left( o_{1},...,o_{t},i_{1},...,i_{t-1},i_{t}=q_{k}|\lambda \right)</script><p>其中， $k=1,…,N$ ，推导递推关系</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\delta_{t+1}\left( k \right)&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{1},...,o_{t+1},i_{1},...,i_{t},i_{t+1}=q_{k}|\lambda \right)\\ 
+&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{t+1}|o_{1},...,o_{t+1},i_{1},...,i_{t},i_{t+1}=q_{k},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t},i_{t+1}=q_{k}|\lambda \right)\\ 
+&=\mathop{\max}_{i_{1},...,i_{t}}\ P\left( o_{t+1}|i_{t+1}=q_{k},\lambda \right)P\left( i_{t+1}=q_{k}|o_{1},...,o_{t},i_{1},...,i_{t},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t}|\lambda \right)\\ 
+&=\mathop{\max}_{1\leq j\leq N}\ P\left( o_{t+1}|i_{t+1}=q_{k},\lambda \right)P\left( i_{t+1}=q_{k}|i_{t}=q_{j},\lambda \right)P\left( o_{1},...,o_{t},i_{1},...,i_{t}=q_{j}|\lambda \right)\\ 
+&=\mathop{\max}_{1\leq j\leq N}\ b_{k}\left( o_{t+1} \right)\cdot a_{jk}\cdot \delta_{t}\left( j \right)\\ 
+&=b_{k}\left( o_{t+1} \right) \cdot\mathop{\max}_{1\leq j\leq N}\ a_{jk} \cdot\delta_{t}\left( j \right)\\ 
+\end{aligned}</script><p>解释一下上面的运算。先利用条件概率和联合概率的关系进行提取，再利用两个假设进行运算化简。<br>其中， $t=1,…,T-1$ ，为了帮助理解，给出如下示意图</p>
+<!--[Viterbi算法递推关系示意图](viterbi递推.png)-->
+<p>如上图，黄色框代表了 $t$ 时刻的计算结果，根据箭头指示的计算方向，递推后添加了粉色框，组合起来代表 $t+1$ 时刻的计算结果。</p>
+<p>我们定义</p>
+<script type="math/tex; mode=display">
+\psi_{t}\left( k \right)=\mathop{\arg\max}_{1\leq j \leq N}\ a_{jk}\cdot\delta_{t-1}\left( j \right)</script><p>其含义为：当 $t$ 时刻状态为 $q_{k}$ 时，使 $b_{k}\left( o_{t+1} \right) \cdot a_{jk} \cdot\delta_{t}\left( j \right)$ 取最大值的 $j$ 的取值（也就是当 $t$ 时刻状态为 $q_{k}$ 时， $t-1$ 时刻的状态），如下图（实线代表最大概率值）。</p>
+<!-- [前趋节点记录](viterbi回溯.png) -->
+<p>所以，Viterbi算法流程如下</p>
+<p>输入：模型参数 $\lambda=\left( \pi,A,B \right)$ ，观测序列 $O=\left( o_{1},o_{2},…,o_{T} \right)$ </p>
+<p>输出：观测序列 $I=\left( i_{1},i_{2},…,i_{T} \right)$  </p>
+<p>算法流程：</p>
+<ol>
+<li>$t=1$ ，对 $k=1,…,N$ 遍历计算， <script type="math/tex; mode=display">
+\delta_{1}\left( k \right)=\pi_{k}\cdot b_{k}\left( o_{1} \right)</script><script type="math/tex; mode=display">
+\psi_{1}\left( k \right)=0</script></li>
+<li>递推计算 $t=2,…,T$ 。在每一个 $t$ 中，对 $k=1,…,N$ 遍历计算， <script type="math/tex; mode=display">
+\delta_{t}\left( k \right)=b_{k}\left( o_{t} \right) \cdot\mathop{\max}_{1\leq j\leq N}\ a_{jk} \cdot\delta_{t-1}\left( j \right)</script><script type="math/tex; mode=display">
+\psi_{t}\left( k \right)=\mathop{\arg\max}_{1\leq j \leq N}\ a_{jk}\cdot\delta_{t-1}\left( j \right)</script></li>
+<li>$t=T$ ，递推结束。寻找最大值， <script type="math/tex; mode=display">
+P^{*}=\mathop{\max}_{1\leq j\leq N}\ \delta_{T}\left( j \right)</script><script type="math/tex; mode=display">
+i_{T}^{*}=\mathop{\arg\max}_{1\leq j \leq N}\ \delta_{T}\left( j \right)</script></li>
+<li>回溯 $t=T-1,…,1$ ， <script type="math/tex; mode=display">
+i_{t}^{*}=\psi_{t+1}\left( i_{t+1}^{*} \right)</script></li>
+<li>最后得到 <script type="math/tex; mode=display">
+I=\left( i_{1}^{*},i_{2}^{*},...,i_{T}^{*} \right)</script></li>
+</ol>
+<h1 id="推荐参考"><a href="#推荐参考" class="headerlink" title="推荐参考"></a>推荐参考</h1><ul>
+<li>《统计学习方法（第二版）》</li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1MW41167Rf">https://www.bilibili.com/video/BV1MW41167Rf</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1vJ411n7F7?p=9">https://www.bilibili.com/video/BV1vJ411n7F7?p=9</a>  </li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Gianni
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/" title="隐马尔可夫模型（HMM）数学推导思路">http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/EM/" rel="tag"># EM</a>
+          
+            <a href="/tags/HMM/" rel="tag"># HMM</a>
+          
+            <a href="/tags/%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/" rel="tag"># 马尔可夫</a>
+          
+            <a href="/tags/Viterbi/" rel="tag"># Viterbi</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/14/MEM%E6%9C%80%E5%A4%A7%E7%86%B5/" rel="next" title="最大熵模型（MEM）数学推导思路">
+                <i class="fa fa-chevron-left"></i> 最大熵模型（MEM）数学推导思路
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/12/01/Alibaba-ESMM/" rel="prev" title="阿里巴巴CVR预估模型：ESMM">
+                阿里巴巴CVR预估模型：ESMM <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wansizhe" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%A6%81"><span class="nav-number">1.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%AE%80%E4%BB%8B"><span class="nav-number">2.</span> <span class="nav-text">模型简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%BA%8F%E5%88%97%E5%92%8C%E7%8A%B6%E6%80%81%E5%80%BC"><span class="nav-number">2.1.</span> <span class="nav-text">状态序列和状态值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%82%E6%B5%8B%E5%BA%8F%E5%88%97%E5%92%8C%E8%A7%82%E6%B5%8B%E5%80%BC"><span class="nav-number">2.2.</span> <span class="nav-text">观测序列和观测值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">模型参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%81%87%E8%AE%BE"><span class="nav-number">3.</span> <span class="nav-text">模型假设</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BD%90%E6%AC%A1%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB%E5%81%87%E8%AE%BE"><span class="nav-number">3.1.</span> <span class="nav-text">齐次马尔可夫假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%82%E6%B5%8B%E7%8B%AC%E7%AB%8B%E5%81%87%E8%AE%BE"><span class="nav-number">3.2.</span> <span class="nav-text">观测独立假设</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E4%B8%80-%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="nav-number">4.</span> <span class="nav-text">问题一  概率计算</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E8%AE%A1%E7%AE%97"><span class="nav-number">4.1.</span> <span class="nav-text">直接计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E5%90%91%E7%AE%97%E6%B3%95"><span class="nav-number">4.2.</span> <span class="nav-text">前向算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E5%90%91%E7%AE%97%E6%B3%95"><span class="nav-number">4.3.</span> <span class="nav-text">后向算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E8%A7%A3"><span class="nav-number">4.4.</span> <span class="nav-text">图解</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E4%BA%8C-%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0"><span class="nav-number">5.</span> <span class="nav-text">问题二  模型学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">5.1.</span> <span class="nav-text">监督学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E2%80%94%E2%80%94-Baum-Welch%E7%AE%97%E6%B3%95%EF%BC%88EM%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">无监督学习—— Baum-Welch算法（EM）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E4%B8%89-%E9%A2%84%E6%B5%8B"><span class="nav-number">6.</span> <span class="nav-text">问题三  预测</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Viterbi%E7%AE%97%E6%B3%95"><span class="nav-number">6.1.</span> <span class="nav-text">Viterbi算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8E%A8%E8%8D%90%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">推荐参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gianni</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

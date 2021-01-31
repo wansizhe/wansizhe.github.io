@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="EM,GMM," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="模型理解已知，在数轴上按照某种概率分布采样，得到了如下图横轴上的红点。依据这些采样点反推出具体的概率分布，这就是我们想要做的事。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高斯混合模型（GMM）数学推导思路">
+<meta property="og:url" content="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/index.html">
+<meta property="og:site_name" content="哲 · 思">
+<meta property="og:description" content="模型理解已知，在数轴上按照某种概率分布采样，得到了如下图横轴上的红点。依据这些采样点反推出具体的概率分布，这就是我们想要做的事。">
+<meta property="og:locale">
+<meta property="og:image" content="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/一维GMM.png">
+<meta property="og:image" content="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/二维GMM.png">
+<meta property="og:image" content="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/GMM概率生成.png">
+<meta property="article:published_time" content="2020-07-01T13:14:58.000Z">
+<meta property="article:modified_time" content="2021-01-31T13:28:32.769Z">
+<meta property="article:author" content="Gianni">
+<meta property="article:tag" content="EM">
+<meta property="article:tag" content="GMM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/一维GMM.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://wansizhe.github.io/2020/07/01/GMM高斯混合/"/>
+
+
+
+
+
+  <title>高斯混合模型（GMM）数学推导思路 | 哲 · 思</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">哲 · 思</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="哲 · 思">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">高斯混合模型（GMM）数学推导思路</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-01T21:14:58+08:00">
+                2020-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E4%B8%8E%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习算法与模型</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="模型理解"><a href="#模型理解" class="headerlink" title="模型理解"></a>模型理解</h1><p>已知，在数轴上按照某种概率分布采样，得到了如下图横轴上的红点。依据这些采样点反推出具体的概率分布，这就是我们想要做的事。</p>
+<a id="more"></a>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/一维GMM.png" alt="一维高斯混合模型示例"></p>
+<p>概率分布不能凭空猜测，我们假设所要求的概率分布是由多个高斯分布混合而成的，所谓“混合”，可以理解成“加权平均”，数学上可以写成</p>
+<script type="math/tex; mode=display">
+P\left( x \right)=\sum_{k=1}^{K}{\alpha_{k}\cdot\mathcal N\left( x| \mu_{k},\Sigma_{k} \right)}</script><p>其中，为简便，用 $\mathcal{N}$ 表示高斯分布的表达式， $\mu_{k}$ 表示第 $k$ 个高斯分布的均值向量， $\Sigma_{k}$ 表示第 $k$ 个高斯分布的协方差矩阵， $\alpha_{k}$ 表示第 $k$ 个高斯分布的权重系数，这个系数还满足</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{K}{\alpha_{k}}=1</script><p>有了这种几何理解，再看已知的采样点，可以看到明显的两个密集区域，说明这两个密集区域是概率较大的位置，很有可能是高斯分布的峰值位置，因此可以大致画出两个高斯分布的曲线（如上图蓝线和黄线）。</p>
+<p>类似的，也可以想象出一个二维平面中的采样点的分布，由此想像出二维高斯分布的叠加。如下图所示，二维高斯分布用“等高线”的形式大致画出。</p>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/二维GMM.png" alt="二维高斯混合模型示例"></p>
+<p>以上，是对GMM的几何理解。但是高斯分布的维度限制这种几何角度的想象，更进一步理解，需要从概率生成模型的角度理解。高斯混合模型是一种较简单的概率图模型，也是一种简单的生成模型。</p>
+<p><img src="/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/GMM概率生成.png" alt="GMM概率生成模型示意图"></p>
+<p>我们假设采样点是这样得到的</p>
+<ol>
+<li>按照一定的概率分布，选取一个高斯分布</li>
+<li>按照选出的高斯分布来采样<br>我们假设已经有了 $K$ 个高斯分布， 根据隐变量 $Z$ 的取值来选择其中一个高斯分布来采样。$P\left( z \right)$ 是一种离散的概率分布<script type="math/tex; mode=display">
+P\left( Z=k \right)=p_{k}</script>显然 $\sum_{k=1}^{K}{p_{k}}=1$ ，接下来计算 $P\left( x \right)$ ，需要充分利用联合概率和边缘概率的关系<script type="math/tex; mode=display">
+\begin{aligned} 
+P\left( x \right)&=\sum_{Z}^{}{P\left( x,Z \right)}\\ 
+&=\sum_{k=1}^{K}{P\left( x,Z=k \right)}\\ 
+&=\sum_{k=1}^{K}{P\left( x|Z=k \right)P\left( Z=k \right)}\\ 
+&=\sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x | \mu_{k},\Sigma_{k} \right)} 
+\end{aligned}</script>这样，模型的定义就更明确了，我们称</li>
+</ol>
+<ul>
+<li>$X=\left\{ x_{1},x_{2},…,x_{N} \right\}$ 为观测数据，</li>
+<li>$\left( X,Z \right)=\left\{ \left( x_{1}, Z_{1} \right),\left( x_{2}, Z_{2} \right),…,\left( x_{N}, Z_{N} \right) \right\}$ 为完全数据。</li>
+</ul>
+<p>已知 $N$ 个样本，我们希望可以求出GMM中的 $K$ 个不同的高斯分布，其中称 </p>
+<ul>
+<li>$\theta=\left( p_{1},p_{2},…,p_{K},\mu_{1},\mu_{2},…,\mu_{K},\Sigma_{1},\Sigma_{2},…\Sigma_{K} \right)$ 为模型参数。</li>
+</ul>
+<p>于是这个问题就变成了参数求解的问题，由极大似然估计的方法可以得到</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\hat{\theta}_{MLE}&=\mathop{\arg\min}_{\theta} \log P\left( X \right)\\ 
+&=\mathop{\arg\min}_{\theta} \log\prod_{i=1}^{N}P\left( x_{i} \right)\\ 
+&=\mathop{\arg\min}_{\theta} \sum_{i=1}^{N}{\log P\left( x_{i} \right)}\\ 
+&=\mathop{\arg\min}_{\theta} \sum_{i=1}^{N}{\log \left[ \sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x_{i} | \mu_{k},\Sigma_{k} \right)} \right]} 
+\end{aligned}</script><p>其中，对数中包含加法，难以直接优化，需要采用EM算法。</p>
+<h1 id="EM算法求解"><a href="#EM算法求解" class="headerlink" title="EM算法求解"></a>EM算法求解</h1><blockquote>
+<p>EM算法链接</p>
+</blockquote>
+<p>首先明确联合概率、边缘概率和条件概率</p>
+<script type="math/tex; mode=display">
+P\left( x,Z \right)=P\left( Z \right)P\left( x|Z \right)=P_{Z}\cdot\mathcal N\left( x | \mu_{k},\Sigma_{k} \right)</script><script type="math/tex; mode=display">
+P\left( x \right)=\sum_{k=1}^{K}{p_{k}\cdot \mathcal N\left( x | \mu_{k},\Sigma_{k} \right)}</script><script type="math/tex; mode=display">
+P\left( Z|x \right)=\frac{P\left( x,Z \right)}{P\left( x \right)}</script><p>首先根据E-step，写出Q函数</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+Q\left( \theta,\theta^{\left( t \right)} \right)&=\int_{Z}P\left( Z|X,\theta^{\left( t \right)} \right)\log P\left( X,Z|\theta \right) \mathrm{d}Z\\ 
+&=\sum_{Z}{\left[ \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\log\prod_{j=1}^{N}P\left( x_{j},Z_{j} | \theta \right) \right]}\\ 
+&=\sum_{Z}{\left[ \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\sum_{j=1}^{N}{\log P\left( x_{j},Z_{j} | \theta \right)} \right]}\\ 
+&=\sum_{Z}{\left[ \sum_{j=1}^{N}{\left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right)}  \right]}\\ 
+&=\sum_{j=1}^{N}{\sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}} 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程，首先将概率写成所有样本连乘的形式，然后将对数上的连乘写成外部的连加，接下来将连加符一步步外提，直至提到最外面。</p>
+</blockquote>
+<p>接下来，以 $j=1$ 为例，计算内部</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1},...Z_{N}}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1},...Z_{N}}{\left[P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right) \prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1}}{\left[ \left( \sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} \right)P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+\end{aligned}</script><blockquote>
+<p>解释一下上面的运算过程，首先当前 $j=1$ ，从对 $Z$ 的连加中将 $Z_{1}$ 单独分类出来，同时连加内部的表达式中与 $Z_{1}$ 有关的也要分离出来。</p>
+</blockquote>
+<p>其中</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+\quad\sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} &=\prod_{i=2}^{N}{\sum_{Z_{i}}{P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)}}\\ 
+&=\prod_{i=2}^{N}{1}\\ 
+&=1 
+\end{aligned}</script><p>所以</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{Z_{1}}{\left[ \left( \sum_{Z_{2},...Z_{N}}{\prod_{i=2}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right)} \right)P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]}\\ 
+&=\sum_{Z_{1}}{\left[ P\left( Z_{1}| x_{1},\theta^{\left( t \right)} \right)\log P\left( x_{1},Z_{1} | \theta \right) \right]} 
+\end{aligned}</script><p>对 $j=1$ 如此，当 $j$ 取其它值时也有类似的上述计算。所以，对任意确定的 $j$ 都有</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}\\ 
+&=\sum_{Z_{j}}{\left[ P\left( Z_{j}| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]} 
+\end{aligned}</script><p>将上式代入到Q函数</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+Q\left( \theta,\theta^{\left( t \right)} \right)&=\sum_{j=1}^{N}{\sum_{Z}{\left[ \left( \prod_{i=1}^{N}P\left( Z_{i}| x_{i},\theta^{\left( t \right)} \right) \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{Z_{j}}{\left[ P\left( Z_{j}| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j} | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log P\left( x_{j},Z_{j}=k | \theta \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( P\left( Z_{j}=k  \right)P\left( x_{j}|Z_{j}=k , \theta \right) \right) \right]}}\\ 
+&=\sum_{j=1}^{N}{\sum_{k=1}^{K}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}}\\ 
+&=\sum_{k=1}^{K}{\sum_{j=1}^{N}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}}\\ 
+\end{aligned}</script><p>解释一下上面的运算过程，就是利用联合概率和条件概率的关系，将复杂表达替换为简便表达的过程</p>
+<p>然后根据M-step，对Q函数最大化，优化参数，以求 $p^{\left( t+1 \right)}=\left( p_{1}^{\left( t+1 \right)}, p_{2}^{\left( t+1 \right)},…,p_{K}^{\left( t+1 \right)}\right)$ 为例</p>
+<script type="math/tex; mode=display">
+\max \limits_{p}\ \sum_{k=1}^{K}{\sum_{j=1}^{N}{\left[ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log\left( p_{k}\cdot \mathcal N\left( x_{j} | \mu_{k},\Sigma_{k} \right) \right) \right]}} \qquad \mathrm{s.t.}\quad\sum_{k=1}^{K}{p_{k}}=1</script><p>略去与 p 无关的项，可以写成</p>
+<script type="math/tex; mode=display">
+ \max \limits_{p}\ \sum_{k=1}^{K}{\sum_{j=1}^{N}{ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log p_{k} }} \qquad  \mathrm{s.t.}\quad\sum_{k=1}^{K}{p_{k}}=1</script><p>写出拉格朗日函数</p>
+<script type="math/tex; mode=display">
+L\left( p,\lambda \right)=\sum_{k=1}^{K}{\sum_{j=1}^{N}{ P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)\log p_{k} }}+\lambda \left( \sum_{k=1}^{K}{p_{k}}-1 \right)</script><p>对求偏导</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad \frac{\partial L}{\partial p_{k}}=0\\ 
+&\Rightarrow\sum_{j=1}^{N}{\frac{1}{p_{k}}P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda = 0\\ 
+&\Rightarrow\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda p_{k} = 0\\ 
+&\Rightarrow \sum_{k=1}^{K}{\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\sum_{k=1}^{K}{\lambda p_{k}} = 0\\ 
+&\Rightarrow \sum_{j=1}^{N}{\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\lambda = 0\\ 
+\end{aligned}</script><p>其中</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}=1</script><p>代入后</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{j=1}^{N}{\sum_{k=1}^{K}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}}+\lambda = 0\\ 
+&\Rightarrow \sum_{j=1}^{N}{1}+\lambda = 0\\ 
+\end{aligned}</script><p>于是得到 $\lambda = -N$ ，反代入到上面的式子</p>
+<script type="math/tex; mode=display">
+\begin{aligned} 
+&\quad\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}+\lambda p_{k} = 0\\ 
+&\Rightarrow\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}-N p_{k} = 0\\
+\end{aligned}</script><p>于是得到</p>
+<script type="math/tex; mode=display">
+p_{k}^{\left( t+1 \right)}=\frac{1}{N}\sum_{j=1}^{N}{P\left( Z_{j}=k| x_{j},\theta^{\left( t \right)} \right)}</script><p>至于 $\mu^{\left( t+1 \right)}$ 和 $\Sigma^{\left( t+1 \right)}$ 的求解，和上面的方法相同，甚至更简单，因为这两个参数的优化是无约束的，可以直接求偏导求解</p>
+<script type="math/tex; mode=display">
+\mu_{k}^{\left( t+1 \right)}=\frac{\sum_{j=1}^{N}{x_{j} P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}{\sum_{j=1}^{N}{ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}</script><script type="math/tex; mode=display">
+\Sigma_{k}^{\left( t+1 \right)}=\frac{\sum_{j=1}^{N}{\left( x_{j}-\mu_{k}^{\left( t \right)} \right)^{2} P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}{\sum_{j=1}^{N}{ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)}}</script><p>其中</p>
+<script type="math/tex; mode=display">
+P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)=\frac{p_{k}^{\left( t \right)}\cdot\mathcal{N}\left( x_{j} | \mu_{k}^{\left( t \right)},\Sigma_{k}^{\left( t \right)} \right)}{\sum_{i=1}^{K}{p_i^{\left( t \right)}\cdot\mathcal N\left( x_{j} | \mu_{i}^{\left( t \right)},\Sigma_{i}^{\left( t \right)} \right)}}</script>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Gianni
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/" title="高斯混合模型（GMM）数学推导思路">http://wansizhe.github.io/2020/07/01/GMM%E9%AB%98%E6%96%AF%E6%B7%B7%E5%90%88/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/EM/" rel="tag"># EM</a>
+          
+            <a href="/tags/GMM/" rel="tag"># GMM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/24/EM%E7%AE%97%E6%B3%95/" rel="next" title="期望最大算法（EM）数学推导思路">
+                <i class="fa fa-chevron-left"></i> 期望最大算法（EM）数学推导思路
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/07/07/Adaboost%E7%AE%97%E6%B3%95/" rel="prev" title="Adaboost算法及代码实现">
+                Adaboost算法及代码实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wansizhe" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%90%86%E8%A7%A3"><span class="nav-number">1.</span> <span class="nav-text">模型理解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#EM%E7%AE%97%E6%B3%95%E6%B1%82%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">EM算法求解</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2020 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gianni</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
