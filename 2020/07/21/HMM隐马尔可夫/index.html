@@ -92,7 +92,7 @@
 <meta property="og:image" content="http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/viterbi递推.png">
 <meta property="og:image" content="http://wansizhe.github.io/2020/07/21/HMM%E9%9A%90%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/viterbi回溯.png">
 <meta property="article:published_time" content="2020-07-21T13:36:44.000Z">
-<meta property="article:modified_time" content="2021-01-31T14:58:51.616Z">
+<meta property="article:modified_time" content="2021-01-31T15:03:40.417Z">
 <meta property="article:author" content="Gianni">
 <meta property="article:tag" content="EM">
 <meta property="article:tag" content="HMM">
@@ -551,7 +551,7 @@ P\left( O|\lambda \right)=\sum_{j=1}^{N}{\sum_{k=1}^{N}{\left[ \alpha_{t}\left( 
 <script type="math/tex; mode=display">
 \hat{b}_{j}\left( k \right)=\frac{M_{jk}}{\sum_{k=1}^{N}{M_{jk}}}</script><h2 id="无监督学习——-Baum-Welch算法（EM）"><a href="#无监督学习——-Baum-Welch算法（EM）" class="headerlink" title="无监督学习—— Baum-Welch算法（EM）"></a>无监督学习—— Baum-Welch算法（EM）</h2><p>样本数据中不包含状态序列时，就需要使用优化算法。Baum-Welch算法实际上就是EM算法。接下来的推导直接套用EM算法的结论，复习见下方链接。</p>
 <blockquote>
-<p><a href="https://wansizhe.github.io/2020/06/24/EM算法/">期望最大算法（EM）数学推导思路</a>EM算法链接</p>
+<a href="/2020/06/24/EM%E7%AE%97%E6%B3%95/" title="期望最大算法（EM）数学推导思路">期望最大算法（EM）数学推导思路</a>
 </blockquote>
 <p>直接套用，注意上角标出现的 $\left( t \right)$ 表示第 $t$ 轮迭代优化后的参数， $\lambda^{\left( t \right)}=\left( \pi^{\left( t \right)},A^{\left( t \right)},B^{\left( t \right)} \right)$ ，小角标出现的 $t$ 表示序列中的第 $t$ 时刻</p>
 <script type="math/tex; mode=display">
