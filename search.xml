@@ -600,6 +600,7 @@ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)=\frac{p_{k}^{\left( t \ri
       <tags>
         <tag>EM</tag>
         <tag>GMM</tag>
+        <tag>概率图模型</tag>
       </tags>
   </entry>
   <entry>
@@ -953,6 +954,7 @@ I=\left( i_{1}^{*},i_{2}^{*},...,i_{T}^{*} \right)</script></li>
         <tag>HMM</tag>
         <tag>马尔可夫</tag>
         <tag>Viterbi</tag>
+        <tag>概率图模型</tag>
       </tags>
   </entry>
   <entry>
