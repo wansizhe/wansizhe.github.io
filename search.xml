@@ -93,146 +93,70 @@ Loss\left(\theta_{ctr},\theta_{cvr}\right) =
       </tags>
   </entry>
   <entry>
-    <title>Hello World</title>
-    <url>/2020/05/13/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-      <categories>
-        <category>Introduction</category>
-      </categories>
-  </entry>
-  <entry>
-    <title>my first blog</title>
-    <url>/2020/05/13/my-first-blog/</url>
-    <content><![CDATA[<h3 id="this-is-my-first-hexo-blog"><a href="#this-is-my-first-hexo-blog" class="headerlink" title="this is my first hexo blog"></a>this is my first hexo blog</h3><a id="more"></a>
-<p>test</p>
-<script type="math/tex; mode=display">
-f(x)=\frac{P(x)}{Q(x)}</script>]]></content>
-      <categories>
-        <category>Introduction</category>
-      </categories>
-      <tags>
-        <tag>hexo</tag>
-        <tag>next</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>支持向量机（SVM）数学推导思路</title>
-    <url>/2020/06/03/SVM-math/</url>
-    <content><![CDATA[<h1 id="相关定义和说明"><a href="#相关定义和说明" class="headerlink" title="相关定义和说明"></a>相关定义和说明</h1><p>数据集定义为： $\left\{ (x_{i}, y_{i}) \right\}_{i=1}^{N}$ ，其中 $x_{i}\in \mathbb{R}^{p}$ ， $y_{i} \in \left\{ -1, +1 \right\}$ </p>
-<p>模型定义为： $f\left( x \right) = \text{sign}\left( w^{T} x + b \right)$ ，其中 $w \in \mathbb{R}^{p}$ </p>
+    <title>Adaboost算法及代码实现</title>
+    <url>/2020/07/07/Adaboost%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<h1 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h1><p>输入：训练集 $T=\left\{ \left( x_{1},y_{1} \right),\left( x_{2},y_{2} \right),…,\left( x_{N},y_{N} \right) \right\}$ ，其中 $x_{i}\in\mathbb{R}^{n},y_{i}\in\left\{ -1,+1 \right\}$ </p>
+<p>输出：最终加权组合起来的分类器</p>
 <a id="more"></a>
-<p>整体知识框架为</p>
+<p>算法：</p>
+<ol>
+<li>初始化权重 <script type="math/tex; mode=display">
+D_{1}=\left\{ w_{1i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
+w_{1i}=\frac{1}{N}</script></li>
+<li>训练 $M$ 个基分类器<ol>
+<li>用带权重 $D_{m}$ 的训练集组训练出一个基分类器 <script type="math/tex; mode=display">
+G_{m}\left( x \right)</script></li>
+<li>计算这个基分类器的错误率（带权重） <script type="math/tex; mode=display">
+e_{m}=\sum_{i=1}^{N}{w_{mi}I\left( G_{m}\left( x_{i} \right)\ne y_{i} \right)}</script></li>
+<li>计算分类器权重： <script type="math/tex; mode=display">
+\alpha_{m} =\frac{1}{2}\log\frac{1-e_{m}}{e_{m}}</script></li>
+<li>计算规范化因子 <script type="math/tex; mode=display">
+Z_{m}=\sum_{i=1}^{N}{w_{mi}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)}</script></li>
+<li>更新权重： <script type="math/tex; mode=display">
+D_{m+1}=\left\{ w_{m+1,i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
+w_{m+1,i}=\frac{w_{mi}}{Z_{m}}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)</script></li>
+</ol>
+</li>
+<li>组合得到最终分类器<script type="math/tex; mode=display">
+G\left( x \right)={\rm sign}\left( \sum_{m=1}^{M}{\alpha_{m}G_{m}\left( x \right)} \right)</script></li>
+</ol>
+<h1 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h1><p>参考代码：<a href="https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb">https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb</a></p>
+<p>AdaBoost构建框架如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AdaBoost</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        初始化模型参数</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G_train</span>(<span class="params">self, features, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        训练单个基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G</span>(<span class="params">self, x, v, flag</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        应用单个的基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算基分类器权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算规范化因子</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        更新权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        adaboost算法训练过程</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        单样本预测</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+<p>接下来详细解释几个重要函数。</p>
+<p>首先是初始化函数，涉及到贯穿整个算法的一些参数，包括</p>
 <ul>
-<li>Hard-Margin</li>
-<li>Soft-Margin</li>
+<li>基分类器数量</li>
+<li>数据集（包括特征值、类别、样本数量、特征数量）</li>
+<li>数据权重集合</li>
+<li>基分类器参数集合</li>
+<li>基分类器权重集合</li>
 </ul>
-<p>具体到以上两部分推导的内部，运用到了</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    初始化模型参数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    self.clf_num = num</span><br><span class="line">    self.X, self.Y = datasets, labels</span><br><span class="line">    <span class="comment"># M个数据，也就是N个特征</span></span><br><span class="line">    self.M, self.N = datasets.shape</span><br><span class="line">    <span class="comment"># 分类器参数集合</span></span><br><span class="line">    self.clf_args = []</span><br><span class="line">    <span class="comment"># 初始化数据权重和分类器权重</span></span><br><span class="line">    self.w = [<span class="number">1.0</span> / self.M] * self.M</span><br><span class="line">    self.alpha = []</span><br></pre></td></tr></table></figure>
+<p>接下来是计算分类器权重、规范化因子和数据权重更新的函数，可以按照前文中的公式计算</p>
 <ul>
-<li>间隔</li>
-<li>对偶</li>
-<li>核技巧（选择性使用）</li>
+<li>计算分类器权重时需要的参数：当前分类器的错误率</li>
+<li>计算规范化因子时需要的参数：当前分类器权重、当前分类器的分类结果</li>
+<li>计算新一轮权重时需要的参数：当前分类器权重、当前分类器的分类结果、规范化因子</li>
 </ul>
-<h1 id="Hard-Margin-硬间隔"><a href="#Hard-Margin-硬间隔" class="headerlink" title="Hard-Margin 硬间隔"></a>Hard-Margin 硬间隔</h1><p>设 $\text{margin}\left( w, b \right)$ 表示给定模型参数的情况下，所有样本到分类超平面的最小距离</p>
-<script type="math/tex; mode=display">
-\text{margin}\left( w, b \right)=\min distance\left( w, b, x_{i} \right)=\min\frac{1}{\left| \left| w \right| \right|}\left| w^{T}x+b \right|=\min\frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right)</script><p>目标是将这个值最大化，优化目标为</p>
-<script type="math/tex; mode=display">
-\max_{w, b}\min_{x_{i}}\ \frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right) \qquad \text{s.t.}\quad y_{i}\left( w^{T} x_{i}+b \right)> 0</script><p>令 $y_{i}\left( w^{T} x_{i}+b \right)\geq 1$ ，则优化目标变为</p>
-<script type="math/tex; mode=display">
-\max_{w, b}\ \frac{1}{\left| \left| w \right| \right|} \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>等价于</p>
-<script type="math/tex; mode=display">
-\min_{w, b}\frac{1}{2}w^{T}w \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>接下来试图让模型参数不受可行条件约束，该优化问题的拉格朗日函数为</p>
-<script type="math/tex; mode=display">
-L\left( w, b, \lambda \right)=\frac{1}{2}w^{T}w + \sum_{i=1}^{N}{\lambda_{i}\left[1- y_{i}\left( w^{T}x_{i}+b \right) \right]}</script><p>其中 $\lambda\in \mathbb{R}^p$ 且 $\lambda_{i}\geq 0$ </p>
-<p>根据广义拉格朗日函数，优化目标等价于（证明略）</p>
-<script type="math/tex; mode=display">
-\min_{w, b}\max_{\lambda}\ L\left( w, b, \lambda \right) \qquad \text{s.t.} \quad \lambda_{i}\geq 0</script><p>接下来用求导方法求解 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
-<script type="math/tex; mode=display">
-\frac{\partial L}{\partial b} = 0\quad \Rightarrow \quad\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>代入拉格朗日函数后继续求导</p>
-<script type="math/tex; mode=display">
-\frac{\partial L}{\partial w} = 0\quad \Rightarrow \quad w=\sum_{i=1}^{N}{\lambda_{i}y_{i}x_{i}}</script><p>继续带入拉格朗日函数，求得 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
-<script type="math/tex; mode=display">
-L\left( w, b, \lambda \right)=-\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}+\sum_{i=1}^{N}{\lambda_{i}}</script><p>代入对偶问题的优化目标，求这个最小值关于 $\lambda$ 的最大值，优化目标可以写成（下方通过提出负号，将最大化写为最小化）</p>
-<script type="math/tex; mode=display">
-\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad \lambda_{i}\geq 0，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>求解该问题（可以用SMO算法）可以得到最优解 $\lambda^{\ast} = \left( \lambda_{1}^{\ast},\lambda_{1}^{\ast},…,\lambda_{N}^{\ast} \right)^{T}$ </p>
-<p>接下来根据KKT条件求解模型参数的最优解。KKT条件包括三类条件</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算分类器权重，为了防止err为0，也可以在分母加一个极小值</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.5</span> * np.log((<span class="number">1</span> - err) / err)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算规范化因子</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    numerators = [self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M)]</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sum</span>(numerators)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    更新权重</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M):</span><br><span class="line">        self.weights[i] = self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) / Z </span><br></pre></td></tr></table></figure>
+<p>接下来是样本预测函数，也就是组合得到的最终的分类器，加权求和后使用符号函数。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    单样本预测</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    res = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        j, v, flag = self.clf_args[i]</span><br><span class="line">        result += self.alpha * self.G(feature[j], v, flag)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> <span class="keyword">if</span> res &gt; <span class="number">0</span> <span class="keyword">else</span> -<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>最重要就是AdaBoost算法训练过程，其中基分类器用的是单层决策树，循环嵌套结构如下</p>
 <ul>
-<li>求导为0条件： $\frac{\partial L}{\partial w}=0，\frac{\partial L}{\partial b}=0，\frac{\partial L}{\partial \lambda}=0$ </li>
-<li>可行条件： $\lambda_{i}^{\ast}\geq 0，1-y_{i}\left( w^{T}x_{i}+b \right)\leq 0$ </li>
-<li>松弛互补条件： $\lambda_{i}^{\ast}\left[ 1-y_{i}\left( w^{T}x_{i}+b \right) \right]=0$ </li>
+<li>迭代训练每个基分类器</li>
+<li>训练一个基分类器时，由于是单层决策树，要尝试使用每一个特征来分类，选一个最好的</li>
+<li>用一个特征分类时，要尝试每个分类边界值，找到一个最好的（这一步体现在基分类器训练中）</li>
 </ul>
-<p>根据KKT条件中的松弛互补条件，求解得</p>
-<script type="math/tex; mode=display">
-w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
-b^{\ast}=y_{k}-w^{\ast T}x_{k}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x^{k}}</script><p>其中样本 $\left( x_{k}, y_{k} \right)$ 满足 $1-y_{i}\left( w^{T}x_{i}+b \right)= 0，\lambda_{k} &gt;0$ ，这个样本就是支持向量</p>
-<p>最终，决策函数为</p>
-<script type="math/tex; mode=display">
-f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Soft-Margin-软间隔"><a href="#Soft-Margin-软间隔" class="headerlink" title="Soft-Margin 软间隔"></a>Soft-Margin 软间隔</h1><p>与Hard-Margin相比，可以允许一点点错误，优化目标可以写为</p>
-<script type="math/tex; mode=display">
-\min_{w, b}\frac{1}{2}w^{T}w+\text{loss}</script><p>其中的损失函数为Hinge-Loss，即合页损失函数</p>
-<script type="math/tex; mode=display">
-\text{loss} = \sum_{i=1}^{N}{\max\left\{ 0,\ 1-y_{i}\left( w^{T}x_{i}+b \right)  \right\}}</script><p>令 $\xi_{i} = 1-y_{i}\left( w^{T}x_{i}+b \right)$ ，$\xi_{i}\geq 0$ ，则优化目标等价于</p>
-<script type="math/tex; mode=display">
-\min_{w, b}\frac{1}{2}w^{T}w+C\sum_{i=1}^{N}{\xi_{i}} \qquad \text{s.t.}\quad y_{i}\left( w^{T}x_{i}+b \right)\geq1-\xi_{i}，\xi_{i}\geq0</script><p>其中，$C$ 为超参数。与Hard-Margin的推导类似，最终优化目标等价于</p>
-<script type="math/tex; mode=display">
-\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>通过对 $\lambda$ 添加上限，影响了支持向量，影响了最优解。同样方法求得</p>
-<script type="math/tex; mode=display">
-w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
-b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x_{k}}</script><p>最终决策函数为</p>
-<script type="math/tex; mode=display">
-f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Kernel-核函数"><a href="#Kernel-核函数" class="headerlink" title="Kernel 核函数"></a>Kernel 核函数</h1><p>将普通SVM中的 $x$ 进行替换， $x\rightarrow\phi\left( x \right)$ ，核函数 $K\left( x, z \right)=\phi\left( x \right)^{T}\phi\left( z \right)$ ，以Soft-Margin为例，优化目标等价于</p>
-<script type="math/tex; mode=display">
-\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}K\left( x_{i}, x_{k} \right)}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>同样的方法求解得到</p>
-<script type="math/tex; mode=display">
-w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)}\\
-b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)^{T}\phi\left( x_{k} \right)}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x_{k} \right)}</script><p>最终决策函数为</p>
-<script type="math/tex; mode=display">
-f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x \right)}  + b^{\ast} \right)</script><p>另外，常用核函数有</p>
-<ul>
-<li>多项式核函数</li>
-<li>高斯核函数</li>
-</ul>
-<h1 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h1>]]></content>
-      <categories>
-        <category>机器学习算法与模型</category>
-      </categories>
-      <tags>
-        <tag>SVM</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>矩阵SVD分解</title>
-    <url>/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/</url>
-    <content><![CDATA[<p>特征值分解矩阵不能适用于所有矩阵，对于无法进行特征值分解的矩阵，我们使用SVD分解的方法。</p>
-<a id="more"></a>
-<p>对任意一个 $m\times n$ 矩阵 $A$ ，一定可以进行SVD分解，数学形式为</p>
-<script type="math/tex; mode=display">
-A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}</script><p>其中，矩阵 $U$ 的每一个列向量是左奇异向量，对应 $AA^{T}$ 的特征向量，矩阵 $V$ 的每一个列向量（也就是矩阵 $V^{T}$ 的每一个行向量）是右奇异向量，对应 $A^{T}A$  的特征向量。</p>
-<p>另外，矩阵 $D$ 有可能是“高瘦型”，也有可能是“矮胖型”，这取决于矩阵 $A$ 的形状，但是不论形状如何，矩阵 $D$ 只有在主对角线上存在非零元素，这些元素是 $AA^{T}$ 的特征值的算数平方根，也是 $A^{T}A$ 的特征值的算数平方根，称为矩阵 $A$ 的奇异值。</p>
-<p>Python中的Numpy库有SVD分解方法。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = np.array([[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>],[<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a</span><br><span class="line">array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>],</span><br><span class="line">       [<span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>]])</span><br></pre></td></tr></table></figure>
-<p>首先定义一个2行4列的矩阵，其中元素的值随意。<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>u, d, vt = np.linalg.svd(a)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>u</span><br><span class="line">array([[-<span class="number">0.37616823</span>, -<span class="number">0.92655138</span>],</span><br><span class="line">       [-<span class="number">0.92655138</span>,  <span class="number">0.37616823</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d</span><br><span class="line">array([<span class="number">14.22740741</span>,  <span class="number">1.25732984</span>])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>vt</span><br><span class="line">array([[-<span class="number">0.35206169</span>, -<span class="number">0.44362578</span>, -<span class="number">0.53518987</span>, -<span class="number">0.62675396</span>],</span><br><span class="line">       [ <span class="number">0.75898127</span>,  <span class="number">0.3212416</span> , -<span class="number">0.11649807</span>, -<span class="number">0.55423774</span>],</span><br><span class="line">       [-<span class="number">0.40008743</span>,  <span class="number">0.25463292</span>,  <span class="number">0.69099646</span>, -<span class="number">0.54554195</span>],</span><br><span class="line">       [-<span class="number">0.37407225</span>,  <span class="number">0.79697056</span>, -<span class="number">0.47172438</span>,  <span class="number">0.04882607</span>]])</span><br></pre></td></tr></table></figure><br>可以看出左右奇异向量所在的矩阵的形状。特别注意，中间的矩阵 $D$ 只保存了主对角线上的非零元素，并且是按照由大到小的顺序排列。</p>
-<p>矩阵SVD分解是为了减少大矩阵在计算机中的存储，提高矩阵运算速度。我们需要在数学表达上进一步讨论。</p>
-<script type="math/tex; mode=display">
-A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}=\sum_{i=1}^{r}{\lambda_{i}u_{i}v_{i}}</script><p>其中，求和表达式中的 $r$ 是矩阵 $A$ 的非零奇异值个数，也是矩阵 $A$ 的秩， $\lambda$ 是奇异值。求和表达式展开后，我们只保留了矩阵 $D$ 主对角线上的非零奇异值，并按照 $\lambda$ 降序排列每一项，保留系数大的项，舍去系数小的项，实现近似，减少需要存储的值。如果只需要保留前 $k$ 项，则可以写为</p>
-<script type="math/tex; mode=display">
-A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\times k}V^{T}_{k\times n}</script><p>在应用中，例如推荐系统中，由于用户和商品数量极其庞大，由用户和商品构成的矩阵也非常庞大，矩阵中每一个元素表达了某个用户对某个商品的评价或喜好。对于一个用户，使用他对每一个商品的评价构成的向量作为描述这个用户的特征，同样对一个商品，我们使用每一用户对它的评价作为这个商品的特征。在使用了SVD分解并近似后，其实是舍弃了小奇异值所对应的“特征”向量（这里的特征向量是描述用户或商品特征的向量），减少了运算量。</p>
-<p>在Python中，Numpy的SVD分解方法，返回的奇异值已经降序排序，奇异向量也对应调整过位置，运用矩阵切割就可以实现近似。</p>
-<p>矩阵的SVD分解主要运用在利用协同过滤方法实现推荐系统中，充分利用奇异值和奇异向量，对没有直接关联的用户和商品，预测出用户对商品的评价，据此选择是否推荐。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    adaboost算法训练过程</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 迭代训练每个基分类器</span></span><br><span class="line">    <span class="comment"># 每个基分类器只用N个特征中对一个来分类，从中挑一个最好的</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树，就不需要尝试每个特征，也不需要记录基分类器参数，例如</span></span><br><span class="line">        <span class="comment"># clf = DecisionTreeClassifier(max_depth=1)</span></span><br><span class="line">        <span class="comment"># clf.fit(self.X, self.Y)</span></span><br><span class="line">        <span class="comment"># best_res = clf.predict(self.X)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 初始化最低错误率、最佳分类边界值、最佳分类结果、分为正类的判断方向（大于或者小于）</span></span><br><span class="line">        min_err, boundary, best_res, flag, feature_num = <span class="number">1</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 尝试每个特征进行分类器训练</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.N):</span><br><span class="line">            features = self.X[:, j]</span><br><span class="line">            <span class="comment"># 用带权重的数据训练一个基分类器</span></span><br><span class="line">            v, curr_flag, err, res = self.G_train(features, self.Y)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 如果错误率比已有记录更低，就更新记录</span></span><br><span class="line">            <span class="keyword">if</span> err &lt; min_err:</span><br><span class="line">                min_err = err</span><br><span class="line">                feature_num = j</span><br><span class="line">                boundary = v </span><br><span class="line">                flag = curry_flag</span><br><span class="line">                best_res = res</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 如果错误率为0，就不需要再尝试其他特征了</span></span><br><span class="line">            <span class="keyword">if</span> min_err == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树模型，就记录下模型即可，例如</span></span><br><span class="line">        <span class="comment"># self.clfs.append(clf)</span></span><br><span class="line">        <span class="comment"># 记录下当前分类器参数（参数包括分类特征、分类边界值，分类结果）</span></span><br><span class="line">        self.clf_args.append((feature_num, boundary, final_flag))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据当前分类器的错误率计算分类器权重并记录</span></span><br><span class="line">        a = self.cal_alpha(min_err)</span><br><span class="line">        self.alpha.append(a)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据分类器权重和分类结果，计算归一化因子并更新权重</span></span><br><span class="line">        Z = self.Z(a, best_res)</span><br><span class="line">        self.W(a, best_res, Z)</span><br></pre></td></tr></table></figure>
+<p>单层决策树分类器不是AdaBoost算法的重点，代码也不再详细说明了，可以使用sklearn库中的决策树模型，将参数max_depth设置为1，这样也是一个基分类器。</p>
 ]]></content>
       <categories>
         <category>机器学习算法与模型</category>
       </categories>
       <tags>
-        <tag>SVD</tag>
+        <tag>Boost</tag>
+        <tag>树模型</tag>
       </tags>
   </entry>
   <entry>
@@ -292,50 +216,6 @@ A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\time
         <tag>多任务学习</tag>
         <tag>搜索</tag>
         <tag>QAC</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>生成高质量查询推荐词</title>
-    <url>/2020/12/13/Generate-QS/</url>
-    <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1802.07997">Generating High-Quality Query Suggestion Candidates for Task-Based Search</a></p>
-<a id="more"></a>
-<h1 id="0x00-概述"><a href="#0x00-概述" class="headerlink" title="0x00 概述"></a>0x00 概述</h1><p>查询词推荐有两种形式，查询词补齐（query completions）和查询词优化（query refinements）。查询推荐包括两个步骤：先做推荐词的生成（suggestion generation），然后进行推荐词排序（suggestion ranking），这篇论文主要讲第一步，目标是生成足够多的高质量的候选词，并且保证多样性，以供之后的排序。</p>
-<p>作者后文讲了三种方法，通过实验发现三种方法都可以产生了独特的候选词，所以最好是将它们合并起来交给排序模型。</p>
-<h1 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h1><p>假设起始的搜索词为 $q_{0}$ ，给出的推荐词是 $q$ ，需要最大化 $P\left(q|q_{0}\right)$</p>
-<h2 id="Popular-Suffix-Model"><a href="#Popular-Suffix-Model" class="headerlink" title="Popular Suffix Model"></a>Popular Suffix Model</h2><p>对一个输入的查询词，从日志信息中获取出现次数最多的后缀词$s$，通过拼接产生推荐词。</p>
-<script type="math/tex; mode=display">
-P\left(q|q_{0}\right)=pop\left(s\right)</script><p>其中$pop\left(s\right)$和在日志中出现的频率相关</p>
-<h2 id="Neural-Language-Model"><a href="#Neural-Language-Model" class="headerlink" title="Neural Language Model"></a>Neural Language Model</h2><p>以词为单位将输入的查询词扩展成推荐词，使用的是神经语言模型。</p>
-<script type="math/tex; mode=display">
-q_{0}=\left(c_{1},c_{2},...,c_{n}\right) \\
-s=\left(c_{n+1},c_{n+2},...,c_{m}\right) \\
-q=q_{0}\oplus s=\left(c_{1},c_{2},...,c_{n},c_{n+1},c_{n+2},...,c_{m}\right)</script><p>一般使用循环神经网络，例如LSTM、GRU，来根据已有的序列，预测出后续的序列。</p>
-<p>作者的实验设置：hidden_size为512，embedding_layer参数直接从Bing预训练好的迁移过来，beam_search_width设置为30。</p>
-<h2 id="Sequence-to-Sequence-Model"><a href="#Sequence-to-Sequence-Model" class="headerlink" title="Sequence to Sequence Model"></a>Sequence to Sequence Model</h2><p>这个模型包含了语义理解，可以做到refinement，前两种方法只能做到completion将输入的查询词”翻译“成新的搜索词来推荐给用户</p>
-<script type="math/tex; mode=display">
-q_{0} = \left(w_{1},w_{2},...,w_{n}\right) \\
-q=\left(w'_{1},w'_{2},...,w'_{m}\right)</script><p>Seq2Seq模型的Encoder和Decoder可以使用LSTM或者GRU。</p>
-<p>作者在实验中使用的是GRU，编码器hidden_size为100，解码器hidden_size为200，使用Adam优化器，起始learning_rate为0.0001，dropout概率为0.5，beam_search_width设置为100。</p>
-<h1 id="0x02-数据来源"><a href="#0x02-数据来源" class="headerlink" title="0x02 数据来源"></a>0x02 数据来源</h1><p>三种数据来源</p>
-<ul>
-<li>AOL</li>
-<li>KnoweHow</li>
-<li>WikiAnswers</li>
-</ul>
-<p>两种数据组织形式：</p>
-<ul>
-<li>短文本集合，用于前两种方法，学习complete</li>
-<li>同session内的文本对（question-suggestion），用于最后一种方法，学习translate</li>
-</ul>
-]]></content>
-      <categories>
-        <category>论文笔记</category>
-      </categories>
-      <tags>
-        <tag>搜索</tag>
-        <tag>QS</tag>
-        <tag>LSTM</tag>
-        <tag>Seq2Seq</tag>
       </tags>
   </entry>
   <entry>
@@ -604,70 +484,190 @@ P\left( Z_{j}=k|x_{j},\theta^{\left( t \right)}\right)=\frac{p_{k}^{\left( t \ri
       </tags>
   </entry>
   <entry>
-    <title>Adaboost算法及代码实现</title>
-    <url>/2020/07/07/Adaboost%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<h1 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h1><p>输入：训练集 $T=\left\{ \left( x_{1},y_{1} \right),\left( x_{2},y_{2} \right),…,\left( x_{N},y_{N} \right) \right\}$ ，其中 $x_{i}\in\mathbb{R}^{n},y_{i}\in\left\{ -1,+1 \right\}$ </p>
-<p>输出：最终加权组合起来的分类器</p>
+    <title>生成高质量查询推荐词</title>
+    <url>/2020/12/13/Generate-QS/</url>
+    <content><![CDATA[<p>论文地址：<a href="https://arxiv.org/abs/1802.07997">Generating High-Quality Query Suggestion Candidates for Task-Based Search</a></p>
 <a id="more"></a>
-<p>算法：</p>
-<ol>
-<li>初始化权重 <script type="math/tex; mode=display">
-D_{1}=\left\{ w_{1i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
-w_{1i}=\frac{1}{N}</script></li>
-<li>训练 $M$ 个基分类器<ol>
-<li>用带权重 $D_{m}$ 的训练集组训练出一个基分类器 <script type="math/tex; mode=display">
-G_{m}\left( x \right)</script></li>
-<li>计算这个基分类器的错误率（带权重） <script type="math/tex; mode=display">
-e_{m}=\sum_{i=1}^{N}{w_{mi}I\left( G_{m}\left( x_{i} \right)\ne y_{i} \right)}</script></li>
-<li>计算分类器权重： <script type="math/tex; mode=display">
-\alpha_{m} =\frac{1}{2}\log\frac{1-e_{m}}{e_{m}}</script></li>
-<li>计算规范化因子 <script type="math/tex; mode=display">
-Z_{m}=\sum_{i=1}^{N}{w_{mi}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)}</script></li>
-<li>更新权重： <script type="math/tex; mode=display">
-D_{m+1}=\left\{ w_{m+1,i} \right\}_{i=1}^{N}</script>其中 <script type="math/tex; mode=display">
-w_{m+1,i}=\frac{w_{mi}}{Z_{m}}\exp\left( -\alpha_{m}y_{i}G_{m}\left( x_{i} \right) \right)</script></li>
-</ol>
-</li>
-<li>组合得到最终分类器<script type="math/tex; mode=display">
-G\left( x \right)={\rm sign}\left( \sum_{m=1}^{M}{\alpha_{m}G_{m}\left( x \right)} \right)</script></li>
-</ol>
-<h1 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h1><p>参考代码：<a href="https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb">https://github.com/fengdu78/lihang-code/blob/master/第08章%20提升方法/8.Boost.ipynb</a></p>
-<p>AdaBoost构建框架如下</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AdaBoost</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        初始化模型参数</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G_train</span>(<span class="params">self, features, labels</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        训练单个基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">G</span>(<span class="params">self, x, v, flag</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        应用单个的基分类器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算基分类器权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        计算规范化因子</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        更新权重</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        adaboost算法训练过程</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        单样本预测</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
-<p>接下来详细解释几个重要函数。</p>
-<p>首先是初始化函数，涉及到贯穿整个算法的一些参数，包括</p>
+<h1 id="0x00-概述"><a href="#0x00-概述" class="headerlink" title="0x00 概述"></a>0x00 概述</h1><p>查询词推荐有两种形式，查询词补齐（query completions）和查询词优化（query refinements）。查询推荐包括两个步骤：先做推荐词的生成（suggestion generation），然后进行推荐词排序（suggestion ranking），这篇论文主要讲第一步，目标是生成足够多的高质量的候选词，并且保证多样性，以供之后的排序。</p>
+<p>作者后文讲了三种方法，通过实验发现三种方法都可以产生了独特的候选词，所以最好是将它们合并起来交给排序模型。</p>
+<h1 id="0x01-方法"><a href="#0x01-方法" class="headerlink" title="0x01 方法"></a>0x01 方法</h1><p>假设起始的搜索词为 $q_{0}$ ，给出的推荐词是 $q$ ，需要最大化 $P\left(q|q_{0}\right)$</p>
+<h2 id="Popular-Suffix-Model"><a href="#Popular-Suffix-Model" class="headerlink" title="Popular Suffix Model"></a>Popular Suffix Model</h2><p>对一个输入的查询词，从日志信息中获取出现次数最多的后缀词$s$，通过拼接产生推荐词。</p>
+<script type="math/tex; mode=display">
+P\left(q|q_{0}\right)=pop\left(s\right)</script><p>其中$pop\left(s\right)$和在日志中出现的频率相关</p>
+<h2 id="Neural-Language-Model"><a href="#Neural-Language-Model" class="headerlink" title="Neural Language Model"></a>Neural Language Model</h2><p>以词为单位将输入的查询词扩展成推荐词，使用的是神经语言模型。</p>
+<script type="math/tex; mode=display">
+q_{0}=\left(c_{1},c_{2},...,c_{n}\right) \\
+s=\left(c_{n+1},c_{n+2},...,c_{m}\right) \\
+q=q_{0}\oplus s=\left(c_{1},c_{2},...,c_{n},c_{n+1},c_{n+2},...,c_{m}\right)</script><p>一般使用循环神经网络，例如LSTM、GRU，来根据已有的序列，预测出后续的序列。</p>
+<p>作者的实验设置：hidden_size为512，embedding_layer参数直接从Bing预训练好的迁移过来，beam_search_width设置为30。</p>
+<h2 id="Sequence-to-Sequence-Model"><a href="#Sequence-to-Sequence-Model" class="headerlink" title="Sequence to Sequence Model"></a>Sequence to Sequence Model</h2><p>这个模型包含了语义理解，可以做到refinement，前两种方法只能做到completion将输入的查询词”翻译“成新的搜索词来推荐给用户</p>
+<script type="math/tex; mode=display">
+q_{0} = \left(w_{1},w_{2},...,w_{n}\right) \\
+q=\left(w'_{1},w'_{2},...,w'_{m}\right)</script><p>Seq2Seq模型的Encoder和Decoder可以使用LSTM或者GRU。</p>
+<p>作者在实验中使用的是GRU，编码器hidden_size为100，解码器hidden_size为200，使用Adam优化器，起始learning_rate为0.0001，dropout概率为0.5，beam_search_width设置为100。</p>
+<h1 id="0x02-数据来源"><a href="#0x02-数据来源" class="headerlink" title="0x02 数据来源"></a>0x02 数据来源</h1><p>三种数据来源</p>
 <ul>
-<li>基分类器数量</li>
-<li>数据集（包括特征值、类别、样本数量、特征数量）</li>
-<li>数据权重集合</li>
-<li>基分类器参数集合</li>
-<li>基分类器权重集合</li>
+<li>AOL</li>
+<li>KnoweHow</li>
+<li>WikiAnswers</li>
 </ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, num, datasets, labels</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    初始化模型参数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    self.clf_num = num</span><br><span class="line">    self.X, self.Y = datasets, labels</span><br><span class="line">    <span class="comment"># M个数据，也就是N个特征</span></span><br><span class="line">    self.M, self.N = datasets.shape</span><br><span class="line">    <span class="comment"># 分类器参数集合</span></span><br><span class="line">    self.clf_args = []</span><br><span class="line">    <span class="comment"># 初始化数据权重和分类器权重</span></span><br><span class="line">    self.w = [<span class="number">1.0</span> / self.M] * self.M</span><br><span class="line">    self.alpha = []</span><br></pre></td></tr></table></figure>
-<p>接下来是计算分类器权重、规范化因子和数据权重更新的函数，可以按照前文中的公式计算</p>
+<p>两种数据组织形式：</p>
 <ul>
-<li>计算分类器权重时需要的参数：当前分类器的错误率</li>
-<li>计算规范化因子时需要的参数：当前分类器权重、当前分类器的分类结果</li>
-<li>计算新一轮权重时需要的参数：当前分类器权重、当前分类器的分类结果、规范化因子</li>
+<li>短文本集合，用于前两种方法，学习complete</li>
+<li>同session内的文本对（question-suggestion），用于最后一种方法，学习translate</li>
 </ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cal_alpha</span>(<span class="params">self, err</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算分类器权重，为了防止err为0，也可以在分母加一个极小值</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.5</span> * np.log((<span class="number">1</span> - err) / err)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Z</span>(<span class="params">self, a, res</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算规范化因子</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    numerators = [self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M)]</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sum</span>(numerators)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">W</span>(<span class="params">self, a, res, Z</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    更新权重</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.M):</span><br><span class="line">        self.weights[i] = self.w[i] * np.exp(-<span class="number">1</span> * a * self.Y[i] * res[i]) / Z </span><br></pre></td></tr></table></figure>
-<p>接下来是样本预测函数，也就是组合得到的最终的分类器，加权求和后使用符号函数。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">self, feature</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    单样本预测</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    res = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        j, v, flag = self.clf_args[i]</span><br><span class="line">        result += self.alpha * self.G(feature[j], v, flag)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span> <span class="keyword">if</span> res &gt; <span class="number">0</span> <span class="keyword">else</span> -<span class="number">1</span></span><br></pre></td></tr></table></figure>
-<p>最重要就是AdaBoost算法训练过程，其中基分类器用的是单层决策树，循环嵌套结构如下</p>
-<ul>
-<li>迭代训练每个基分类器</li>
-<li>训练一个基分类器时，由于是单层决策树，要尝试使用每一个特征来分类，选一个最好的</li>
-<li>用一个特征分类时，要尝试每个分类边界值，找到一个最好的（这一步体现在基分类器训练中）</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fit</span>(<span class="params">self, X, y</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    adaboost算法训练过程</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># 迭代训练每个基分类器</span></span><br><span class="line">    <span class="comment"># 每个基分类器只用N个特征中对一个来分类，从中挑一个最好的</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.clf_num):</span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树，就不需要尝试每个特征，也不需要记录基分类器参数，例如</span></span><br><span class="line">        <span class="comment"># clf = DecisionTreeClassifier(max_depth=1)</span></span><br><span class="line">        <span class="comment"># clf.fit(self.X, self.Y)</span></span><br><span class="line">        <span class="comment"># best_res = clf.predict(self.X)</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 初始化最低错误率、最佳分类边界值、最佳分类结果、分为正类的判断方向（大于或者小于）</span></span><br><span class="line">        min_err, boundary, best_res, flag, feature_num = <span class="number">1</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span>, <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 尝试每个特征进行分类器训练</span></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(self.N):</span><br><span class="line">            features = self.X[:, j]</span><br><span class="line">            <span class="comment"># 用带权重的数据训练一个基分类器</span></span><br><span class="line">            v, curr_flag, err, res = self.G_train(features, self.Y)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 如果错误率比已有记录更低，就更新记录</span></span><br><span class="line">            <span class="keyword">if</span> err &lt; min_err:</span><br><span class="line">                min_err = err</span><br><span class="line">                feature_num = j</span><br><span class="line">                boundary = v </span><br><span class="line">                flag = curry_flag</span><br><span class="line">                best_res = res</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 如果错误率为0，就不需要再尝试其他特征了</span></span><br><span class="line">            <span class="keyword">if</span> min_err == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 如果使用sklearn的决策树模型，就记录下模型即可，例如</span></span><br><span class="line">        <span class="comment"># self.clfs.append(clf)</span></span><br><span class="line">        <span class="comment"># 记录下当前分类器参数（参数包括分类特征、分类边界值，分类结果）</span></span><br><span class="line">        self.clf_args.append((feature_num, boundary, final_flag))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据当前分类器的错误率计算分类器权重并记录</span></span><br><span class="line">        a = self.cal_alpha(min_err)</span><br><span class="line">        self.alpha.append(a)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 根据分类器权重和分类结果，计算归一化因子并更新权重</span></span><br><span class="line">        Z = self.Z(a, best_res)</span><br><span class="line">        self.W(a, best_res, Z)</span><br></pre></td></tr></table></figure>
-<p>单层决策树分类器不是AdaBoost算法的重点，代码也不再详细说明了，可以使用sklearn库中的决策树模型，将参数max_depth设置为1，这样也是一个基分类器。</p>
+]]></content>
+      <categories>
+        <category>论文笔记</category>
+      </categories>
+      <tags>
+        <tag>搜索</tag>
+        <tag>QS</tag>
+        <tag>LSTM</tag>
+        <tag>Seq2Seq</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2020/05/13/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+      <categories>
+        <category>Introduction</category>
+      </categories>
+  </entry>
+  <entry>
+    <title>my first blog</title>
+    <url>/2020/05/13/my-first-blog/</url>
+    <content><![CDATA[<h3 id="this-is-my-first-hexo-blog"><a href="#this-is-my-first-hexo-blog" class="headerlink" title="this is my first hexo blog"></a>this is my first hexo blog</h3><a id="more"></a>
+<p>test</p>
+<script type="math/tex; mode=display">
+f(x)=\frac{P(x)}{Q(x)}</script>]]></content>
+      <categories>
+        <category>Introduction</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+        <tag>next</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>矩阵SVD分解</title>
+    <url>/2020/05/15/%E7%9F%A9%E9%98%B5SVD%E5%88%86%E8%A7%A3/</url>
+    <content><![CDATA[<p>特征值分解矩阵不能适用于所有矩阵，对于无法进行特征值分解的矩阵，我们使用SVD分解的方法。</p>
+<a id="more"></a>
+<p>对任意一个 $m\times n$ 矩阵 $A$ ，一定可以进行SVD分解，数学形式为</p>
+<script type="math/tex; mode=display">
+A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}</script><p>其中，矩阵 $U$ 的每一个列向量是左奇异向量，对应 $AA^{T}$ 的特征向量，矩阵 $V$ 的每一个列向量（也就是矩阵 $V^{T}$ 的每一个行向量）是右奇异向量，对应 $A^{T}A$  的特征向量。</p>
+<p>另外，矩阵 $D$ 有可能是“高瘦型”，也有可能是“矮胖型”，这取决于矩阵 $A$ 的形状，但是不论形状如何，矩阵 $D$ 只有在主对角线上存在非零元素，这些元素是 $AA^{T}$ 的特征值的算数平方根，也是 $A^{T}A$ 的特征值的算数平方根，称为矩阵 $A$ 的奇异值。</p>
+<p>Python中的Numpy库有SVD分解方法。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a = np.array([[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>],[<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>,<span class="number">8</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>a</span><br><span class="line">array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>],</span><br><span class="line">       [<span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>]])</span><br></pre></td></tr></table></figure>
+<p>首先定义一个2行4列的矩阵，其中元素的值随意。<br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>u, d, vt = np.linalg.svd(a)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>u</span><br><span class="line">array([[-<span class="number">0.37616823</span>, -<span class="number">0.92655138</span>],</span><br><span class="line">       [-<span class="number">0.92655138</span>,  <span class="number">0.37616823</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d</span><br><span class="line">array([<span class="number">14.22740741</span>,  <span class="number">1.25732984</span>])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>vt</span><br><span class="line">array([[-<span class="number">0.35206169</span>, -<span class="number">0.44362578</span>, -<span class="number">0.53518987</span>, -<span class="number">0.62675396</span>],</span><br><span class="line">       [ <span class="number">0.75898127</span>,  <span class="number">0.3212416</span> , -<span class="number">0.11649807</span>, -<span class="number">0.55423774</span>],</span><br><span class="line">       [-<span class="number">0.40008743</span>,  <span class="number">0.25463292</span>,  <span class="number">0.69099646</span>, -<span class="number">0.54554195</span>],</span><br><span class="line">       [-<span class="number">0.37407225</span>,  <span class="number">0.79697056</span>, -<span class="number">0.47172438</span>,  <span class="number">0.04882607</span>]])</span><br></pre></td></tr></table></figure><br>可以看出左右奇异向量所在的矩阵的形状。特别注意，中间的矩阵 $D$ 只保存了主对角线上的非零元素，并且是按照由大到小的顺序排列。</p>
+<p>矩阵SVD分解是为了减少大矩阵在计算机中的存储，提高矩阵运算速度。我们需要在数学表达上进一步讨论。</p>
+<script type="math/tex; mode=display">
+A_{m\times n}=U_{m\times m}D_{m\times n}V^{T}_{n\times n}=\sum_{i=1}^{r}{\lambda_{i}u_{i}v_{i}}</script><p>其中，求和表达式中的 $r$ 是矩阵 $A$ 的非零奇异值个数，也是矩阵 $A$ 的秩， $\lambda$ 是奇异值。求和表达式展开后，我们只保留了矩阵 $D$ 主对角线上的非零奇异值，并按照 $\lambda$ 降序排列每一项，保留系数大的项，舍去系数小的项，实现近似，减少需要存储的值。如果只需要保留前 $k$ 项，则可以写为</p>
+<script type="math/tex; mode=display">
+A_{m\times n}\approx\sum_{i=1}^{k}{\lambda_{i}u_{i}v_{i}}=U_{m\times k}D_{k\times k}V^{T}_{k\times n}</script><p>在应用中，例如推荐系统中，由于用户和商品数量极其庞大，由用户和商品构成的矩阵也非常庞大，矩阵中每一个元素表达了某个用户对某个商品的评价或喜好。对于一个用户，使用他对每一个商品的评价构成的向量作为描述这个用户的特征，同样对一个商品，我们使用每一用户对它的评价作为这个商品的特征。在使用了SVD分解并近似后，其实是舍弃了小奇异值所对应的“特征”向量（这里的特征向量是描述用户或商品特征的向量），减少了运算量。</p>
+<p>在Python中，Numpy的SVD分解方法，返回的奇异值已经降序排序，奇异向量也对应调整过位置，运用矩阵切割就可以实现近似。</p>
+<p>矩阵的SVD分解主要运用在利用协同过滤方法实现推荐系统中，充分利用奇异值和奇异向量，对没有直接关联的用户和商品，预测出用户对商品的评价，据此选择是否推荐。</p>
 ]]></content>
       <categories>
         <category>机器学习算法与模型</category>
       </categories>
       <tags>
-        <tag>Boost</tag>
-        <tag>树模型</tag>
+        <tag>SVD</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>支持向量机（SVM）数学推导思路</title>
+    <url>/2020/06/03/SVM-math/</url>
+    <content><![CDATA[<h1 id="相关定义和说明"><a href="#相关定义和说明" class="headerlink" title="相关定义和说明"></a>相关定义和说明</h1><p>数据集定义为： $\left\{ (x_{i}, y_{i}) \right\}_{i=1}^{N}$ ，其中 $x_{i}\in \mathbb{R}^{p}$ ， $y_{i} \in \left\{ -1, +1 \right\}$ </p>
+<p>模型定义为： $f\left( x \right) = \text{sign}\left( w^{T} x + b \right)$ ，其中 $w \in \mathbb{R}^{p}$ </p>
+<a id="more"></a>
+<p>整体知识框架为</p>
+<ul>
+<li>Hard-Margin</li>
+<li>Soft-Margin</li>
+</ul>
+<p>具体到以上两部分推导的内部，运用到了</p>
+<ul>
+<li>间隔</li>
+<li>对偶</li>
+<li>核技巧（选择性使用）</li>
+</ul>
+<h1 id="Hard-Margin-硬间隔"><a href="#Hard-Margin-硬间隔" class="headerlink" title="Hard-Margin 硬间隔"></a>Hard-Margin 硬间隔</h1><p>设 $\text{margin}\left( w, b \right)$ 表示给定模型参数的情况下，所有样本到分类超平面的最小距离</p>
+<script type="math/tex; mode=display">
+\text{margin}\left( w, b \right)=\min distance\left( w, b, x_{i} \right)=\min\frac{1}{\left| \left| w \right| \right|}\left| w^{T}x+b \right|=\min\frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right)</script><p>目标是将这个值最大化，优化目标为</p>
+<script type="math/tex; mode=display">
+\max_{w, b}\min_{x_{i}}\ \frac{1}{\left| \left| w \right| \right|}y_{i}\left( w^{T}x+b \right) \qquad \text{s.t.}\quad y_{i}\left( w^{T} x_{i}+b \right)> 0</script><p>令 $y_{i}\left( w^{T} x_{i}+b \right)\geq 1$ ，则优化目标变为</p>
+<script type="math/tex; mode=display">
+\max_{w, b}\ \frac{1}{\left| \left| w \right| \right|} \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>等价于</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w \qquad \text{s.t.} \quad y_{i}\left( w^{T} x_{i}+b \right)\geq 1</script><p>接下来试图让模型参数不受可行条件约束，该优化问题的拉格朗日函数为</p>
+<script type="math/tex; mode=display">
+L\left( w, b, \lambda \right)=\frac{1}{2}w^{T}w + \sum_{i=1}^{N}{\lambda_{i}\left[1- y_{i}\left( w^{T}x_{i}+b \right) \right]}</script><p>其中 $\lambda\in \mathbb{R}^p$ 且 $\lambda_{i}\geq 0$ </p>
+<p>根据广义拉格朗日函数，优化目标等价于（证明略）</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\max_{\lambda}\ L\left( w, b, \lambda \right) \qquad \text{s.t.} \quad \lambda_{i}\geq 0</script><p>接下来用求导方法求解 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial b} = 0\quad \Rightarrow \quad\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>代入拉格朗日函数后继续求导</p>
+<script type="math/tex; mode=display">
+\frac{\partial L}{\partial w} = 0\quad \Rightarrow \quad w=\sum_{i=1}^{N}{\lambda_{i}y_{i}x_{i}}</script><p>继续带入拉格朗日函数，求得 $\min_{w, b}\ L\left( w, b, \lambda \right)$</p>
+<script type="math/tex; mode=display">
+L\left( w, b, \lambda \right)=-\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}+\sum_{i=1}^{N}{\lambda_{i}}</script><p>代入对偶问题的优化目标，求这个最小值关于 $\lambda$ 的最大值，优化目标可以写成（下方通过提出负号，将最大化写为最小化）</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad \lambda_{i}\geq 0，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>求解该问题（可以用SMO算法）可以得到最优解 $\lambda^{\ast} = \left( \lambda_{1}^{\ast},\lambda_{1}^{\ast},…,\lambda_{N}^{\ast} \right)^{T}$ </p>
+<p>接下来根据KKT条件求解模型参数的最优解。KKT条件包括三类条件</p>
+<ul>
+<li>求导为0条件： $\frac{\partial L}{\partial w}=0，\frac{\partial L}{\partial b}=0，\frac{\partial L}{\partial \lambda}=0$ </li>
+<li>可行条件： $\lambda_{i}^{\ast}\geq 0，1-y_{i}\left( w^{T}x_{i}+b \right)\leq 0$ </li>
+<li>松弛互补条件： $\lambda_{i}^{\ast}\left[ 1-y_{i}\left( w^{T}x_{i}+b \right) \right]=0$ </li>
+</ul>
+<p>根据KKT条件中的松弛互补条件，求解得</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
+b^{\ast}=y_{k}-w^{\ast T}x_{k}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x^{k}}</script><p>其中样本 $\left( x_{k}, y_{k} \right)$ 满足 $1-y_{i}\left( w^{T}x_{i}+b \right)= 0，\lambda_{k} &gt;0$ ，这个样本就是支持向量</p>
+<p>最终，决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = sign\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Soft-Margin-软间隔"><a href="#Soft-Margin-软间隔" class="headerlink" title="Soft-Margin 软间隔"></a>Soft-Margin 软间隔</h1><p>与Hard-Margin相比，可以允许一点点错误，优化目标可以写为</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w+\text{loss}</script><p>其中的损失函数为Hinge-Loss，即合页损失函数</p>
+<script type="math/tex; mode=display">
+\text{loss} = \sum_{i=1}^{N}{\max\left\{ 0,\ 1-y_{i}\left( w^{T}x_{i}+b \right)  \right\}}</script><p>令 $\xi_{i} = 1-y_{i}\left( w^{T}x_{i}+b \right)$ ，$\xi_{i}\geq 0$ ，则优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{w, b}\frac{1}{2}w^{T}w+C\sum_{i=1}^{N}{\xi_{i}} \qquad \text{s.t.}\quad y_{i}\left( w^{T}x_{i}+b \right)\geq1-\xi_{i}，\xi_{i}\geq0</script><p>其中，$C$ 为超参数。与Hard-Margin的推导类似，最终优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}x_{i}^{T}x_{j}}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>通过对 $\lambda$ 添加上限，影响了支持向量，影响了最优解。同样方法求得</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}}\\
+b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}x_{k}}</script><p>最终决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}x_{i}^{T}}x  + b^{\ast} \right)</script><h1 id="Kernel-核函数"><a href="#Kernel-核函数" class="headerlink" title="Kernel 核函数"></a>Kernel 核函数</h1><p>将普通SVM中的 $x$ 进行替换， $x\rightarrow\phi\left( x \right)$ ，核函数 $K\left( x, z \right)=\phi\left( x \right)^{T}\phi\left( z \right)$ ，以Soft-Margin为例，优化目标等价于</p>
+<script type="math/tex; mode=display">
+\min_{\lambda}\frac{1}{2}\sum_{i=1}^{N}{\sum_{j=1}^{N}{\lambda_{i}\lambda_{j}y_{i}y_{j}K\left( x_{i}, x_{k} \right)}}-\sum_{i=1}^{N}{\lambda_{i}} \qquad \text{s.t.} \quad0\leq \lambda_{i}\leq C，\sum_{i=1}^{N}{\lambda_{i}y_{i}}=0</script><p>同样的方法求解得到</p>
+<script type="math/tex; mode=display">
+w^{\ast}=\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)}\\
+b^{\ast}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}\phi\left( x_{i} \right)^{T}\phi\left( x_{k} \right)}=y_{k}-\sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x_{k} \right)}</script><p>最终决策函数为</p>
+<script type="math/tex; mode=display">
+f\left( x \right) = \text{sign}\left( \sum_{i=1}^{N}{\lambda_{i}^{\ast}y_{i}K\left( x_{i}, x \right)}  + b^{\ast} \right)</script><p>另外，常用核函数有</p>
+<ul>
+<li>多项式核函数</li>
+<li>高斯核函数</li>
+</ul>
+<h1 id="SMO-算法"><a href="#SMO-算法" class="headerlink" title="SMO 算法"></a>SMO 算法</h1>]]></content>
+      <categories>
+        <category>机器学习算法与模型</category>
+      </categories>
+      <tags>
+        <tag>SVM</tag>
       </tags>
   </entry>
   <entry>
@@ -951,10 +951,10 @@ I=\left( i_{1}^{*},i_{2}^{*},...,i_{T}^{*} \right)</script></li>
       </categories>
       <tags>
         <tag>EM</tag>
+        <tag>概率图模型</tag>
         <tag>HMM</tag>
         <tag>马尔可夫</tag>
         <tag>Viterbi</tag>
-        <tag>概率图模型</tag>
       </tags>
   </entry>
   <entry>
@@ -1153,8 +1153,8 @@ g\left( \delta_{i} \right)=\sum_{x}{\tilde P\left( x \right)\sum_{y}{ P_{w}\left
         <category>机器学习算法与模型</category>
       </categories>
       <tags>
-        <tag>最大熵</tag>
         <tag>概率图模型</tag>
+        <tag>最大熵</tag>
       </tags>
   </entry>
 </search>
